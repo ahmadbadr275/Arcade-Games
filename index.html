@@ -2,32 +2,23 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Guess Game 🎮</title>
+    <title>Arcade Guess Game 🎮</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
 <div class="game">
-    <h1>🎯 Guess Game</h1>
-    <p>Pick a number (1–10)</p>
+    <h1>🎯 GUESS THE NUMBER</h1>
+    <p class="subtitle">Pick a number from 1 to 100</p>
 
-    <div class="buttons">
-        <button onclick="guess(1)">1</button>
-        <button onclick="guess(2)">2</button>
-        <button onclick="guess(3)">3</button>
-        <button onclick="guess(4)">4</button>
-        <button onclick="guess(5)">5</button>
-        <button onclick="guess(6)">6</button>
-        <button onclick="guess(7)">7</button>
-        <button onclick="guess(8)">8</button>
-        <button onclick="guess(9)">9</button>
-        <button onclick="guess(10)">10</button>
-    </div>
+    <input type="number" id="guessInput" placeholder="Enter number">
+    
+    <button class="guess-btn" onclick="submitGuess()">GUESS</button>
 
     <p id="message"></p>
-    <p id="lives">❤️ Lives: 5</p>
+    <p id="lives">❤️ Lives: 10</p>
 
-    <button class="restart" onclick="restart()">Restart</button>
+    <button class="restart" onclick="restart()">RESTART</button>
 </div>
 
 <script src="script.js"></script>
