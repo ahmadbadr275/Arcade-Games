@@ -4,49 +4,27 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Arcade Hub 🎮</title>
-<link rel="stylesheet" href="style.css">
-</head>
-<body>
+<style>
+body {
+    background: #111;
+    color: #fff;
+    font-family: 'Press Start 2P', cursive;
+    text-align: center;
+    margin: 0;
+    padding: 0;
+}
 
-<h1>🎮 ARCADE HUB</h1>
+h1, h2 { margin: 20px 0; color: #ff0055; }
 
-<!-- Menu -->
-<div class="menu active" id="menu">
-    <p>Select a game:</p>
-    <button id="openGuess">🎯 Guess the Number</button>
-    <button id="openClicker">🖱️ Clicker Game</button>
-    <button id="openSnake">🐍 Snake Game</button>
-</div>
-
-<!-- Guess the Number Game -->
-<div class="game" id="guess">
-    <h2>🎯 GUESS THE NUMBER</h2>
-    <input type="number" id="guessInput" placeholder="Enter number">
-    <button id="guessBtn">GUESS</button>
-    <p id="message"></p>
-    <p id="lives">❤️ Lives: 10</p>
-    <button id="restartGuess">RESTART</button>
-    <button class="back">🏠 Menu</button>
-</div>
-
-<!-- Clicker Game -->
-<div class="game" id="clicker">
-    <h2>🖱️ CLICKER GAME</h2>
-    <button id="clickButton">CLICK ME!</button>
-    <p>Score: <span id="score">0</span></p>
-    <button id="restartClicker">RESTART</button>
-    <button class="back">🏠 Menu</button>
-</div>
-
-<!-- Snake Game -->
-<div class="game" id="snake">
-    <h2>🐍 SNAKE GAME</h2>
-    <canvas id="snakeCanvas" width="400" height="400"></canvas>
-    <p>Score: <span id="snakeScore">0</span></p>
-    <button id="startSnake">START</button>
-    <button class="back">🏠 Menu</button>
-</div>
-
-<script src="script.js"></script>
-</body>
-</html>
+button {
+    background: #222;
+    border: 2px solid #ff0055;
+    color: #fff;
+    padding: 12px 25px;
+    margin: 10px;
+    font-family: 'Press Start 2P', cursive;
+    font-size: 12px;
+    cursor: pointer;
+    transition: 0.2s;
+}
+button:hover { background
