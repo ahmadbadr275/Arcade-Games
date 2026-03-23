@@ -1,68 +1,52 @@
+/* --- Body & Font --- */
 body {
-    margin: 0;
-    font-family: monospace;
-    background: radial-gradient(circle, #0f2027, #000000);
-    color: #00ffcc;
+    background: #111;
+    color: #fff;
+    font-family: 'Press Start 2P', cursive;
     text-align: center;
 }
 
-.game {
-    margin-top: 100px;
-    background: rgba(0, 0, 0, 0.8);
-    padding: 30px;
-    width: 350px;
-    margin-left: auto;
-    margin-right: auto;
-    border-radius: 20px;
-    box-shadow: 0 0 20px #00ffcc;
-}
+h1 { margin-top: 20px; color: #ff0055; }
 
-h1 {
-    color: #00ffcc;
-    text-shadow: 0 0 10px #00ffcc;
-}
-
-.subtitle {
-    color: #aaa;
-}
-
-input {
-    padding: 12px;
-    width: 80%;
-    margin-top: 15px;
-    border-radius: 10px;
-    border: none;
-    text-align: center;
-    font-size: 16px;
-}
-
+/* --- Buttons --- */
 button {
-    margin-top: 15px;
-    padding: 12px;
-    width: 80%;
-    border: none;
-    border-radius: 10px;
-    font-size: 16px;
+    background: #222;
+    border: 2px solid #ff0055;
+    color: #fff;
+    padding: 15px 30px;
+    margin: 10px;
+    font-family: 'Press Start 2P', cursive;
+    font-size: 14px;
     cursor: pointer;
+    transition: 0.2s;
 }
 
-.guess-btn {
-    background: #00ffcc;
-    color: black;
-}
-
-.restart {
+button:hover {
     background: #ff0055;
-    color: white;
+    color: #111;
 }
 
-#message {
+/* --- Game / Menu Display --- */
+.game, .menu { display: none; margin-top: 30px; }
+.active { display: block; }
+
+/* --- Inputs --- */
+input[type=number] {
+    padding: 10px;
+    font-size: 16px;
+    width: 80px;
+    text-align: center;
+    border: 2px solid #ff0055;
+    background: #111;
+    color: #fff;
+}
+
+/* --- Messages --- */
+#message { margin-top: 20px; font-size: 18px; }
+
+/* --- Snake Canvas --- */
+#snakeCanvas {
+    background: #111;
+    border: 2px solid #ff0055;
     margin-top: 20px;
-    font-size: 18px;
-    font-weight: bold;
-}
-
-#lives {
-    margin-top: 10px;
-    color: #ffcc00;
 }
