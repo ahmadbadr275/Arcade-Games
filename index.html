@@ -1,24 +1,40 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <title>Arcade Guess Game 🎮</title>
-    <link rel="stylesheet" href="style.css">
+<meta charset="UTF-8">
+<title>Arcade Hub 🎮</title>
+<link rel="stylesheet" href="style.css">
 </head>
 <body>
 
-<div class="game">
+<h1>🎮 ARCADE HUB</h1>
+
+<div class="menu active" id="menu">
+    <p>Select a game:</p>
+    <button onclick="openGame('guess')">🎯 Guess the Number</button>
+    <button onclick="openGame('clicker')">🖱️ Clicker Game</button>
+</div>
+
+<!-- Guess the Number Game -->
+<div class="game" id="guess">
     <h1>🎯 GUESS THE NUMBER</h1>
     <p class="subtitle">Pick a number from 1 to 100</p>
-
     <input type="number" id="guessInput" placeholder="Enter number">
-    
-    <button class="guess-btn" onclick="submitGuess()">GUESS</button>
-
+    <button onclick="submitGuess()">GUESS</button>
     <p id="message"></p>
     <p id="lives">❤️ Lives: 10</p>
+    <button onclick="restart()">RESTART</button>
+    <button onclick="backToMenu()">🏠 Menu</button>
+</div>
 
-    <button class="restart" onclick="restart()">RESTART</button>
+<!-- Clicker Game -->
+<div class="game" id="clicker">
+    <h1>🖱️ CLICKER GAME</h1>
+    <p>Click the button as many times as you can!</p>
+    <button id="clickButton" onclick="clickIt()">CLICK ME!</button>
+    <p>Score: <span id="score">0</span></p>
+    <button onclick="resetClicker()">RESTART</button>
+    <button onclick="backToMenu()">🏠 Menu</button>
 </div>
 
 <script src="script.js"></script>
