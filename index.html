@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Guess Game 🎮</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="game">
+    <h1>🎯 Guess Game</h1>
+    <p>Pick a number (1–10)</p>
+
+    <div class="buttons">
+        <button onclick="guess(1)">1</button>
+        <button onclick="guess(2)">2</button>
+        <button onclick="guess(3)">3</button>
+        <button onclick="guess(4)">4</button>
+        <button onclick="guess(5)">5</button>
+        <button onclick="guess(6)">6</button>
+        <button onclick="guess(7)">7</button>
+        <button onclick="guess(8)">8</button>
+        <button onclick="guess(9)">9</button>
+        <button onclick="guess(10)">10</button>
+    </div>
+
+    <p id="message"></p>
+    <p id="lives">❤️ Lives: 5</p>
+
+    <button class="restart" onclick="restart()">Restart</button>
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>
