@@ -13,6 +13,7 @@
     <p>Select a game:</p>
     <button onclick="openGame('guess')">🎯 Guess the Number</button>
     <button onclick="openGame('clicker')">🖱️ Clicker Game</button>
+    <button onclick="openGame('snake')">🐍 Snake Game</button>
 </div>
 
 <!-- Guess the Number Game -->
@@ -34,6 +35,15 @@
     <button id="clickButton" onclick="clickIt()">CLICK ME!</button>
     <p>Score: <span id="score">0</span></p>
     <button onclick="resetClicker()">RESTART</button>
+    <button onclick="backToMenu()">🏠 Menu</button>
+</div>
+
+<!-- Snake Game -->
+<div class="game" id="snake">
+    <h1>🐍 SNAKE GAME</h1>
+    <canvas id="snakeCanvas" width="400" height="400"></canvas>
+    <p>Score: <span id="snakeScore">0</span></p>
+    <button onclick="startSnake()">START</button>
     <button onclick="backToMenu()">🏠 Menu</button>
 </div>
 
