@@ -5,10 +5,12 @@ function openGame(id) {
     document.getElementById(id).classList.add("active");
 }
 
+// Menu buttons
 document.getElementById('openGuess').onclick = () => openGame('guess');
 document.getElementById('openClicker').onclick = () => openGame('clicker');
 document.getElementById('openSnake').onclick = () => openGame('snake');
 
+// Back buttons
 document.querySelectorAll('.back').forEach(btn => {
     btn.onclick = () => {
         clearInterval(snakeInterval);
@@ -72,9 +74,12 @@ const canvasSize = 400;
 
 startSnakeBtn.onclick = startSnake;
 
-// Snake controls
+// Snake controls with focus and prevent scrolling
 document.addEventListener("keydown", e => {
     if (!document.getElementById("snake").classList.contains("active")) return;
+    if(["ArrowUp","ArrowDown","ArrowLeft","ArrowRight"].includes(e.key)) {
+        e.preventDefault(); // prevent page scroll
+    }
     if (e.key === "ArrowUp" && direction !== "DOWN") direction = "UP";
     if (e.key === "ArrowDown" && direction !== "UP") direction = "DOWN";
     if (e.key === "ArrowLeft" && direction !== "RIGHT") direction = "LEFT";
@@ -82,7 +87,7 @@ document.addEventListener("keydown", e => {
 });
 
 function startSnake() {
-    snake = [{x: 10, y: 10}];
+    snake = [{x:10, y:10}];
     direction = "RIGHT";
     snakeScore = 0;
     snakeScoreDisplay.textContent = snakeScore;
@@ -90,6 +95,10 @@ function startSnake() {
     clearInterval(snakeInterval);
     snakeInterval = setInterval(updateSnake, 150);
     drawSnake();
+
+    // Focus canvas to capture keys
+    canvas.setAttribute("tabindex", "0");
+    canvas.focus();
 }
 
 function placeFood() {
