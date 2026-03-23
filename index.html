@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Arcade Hub 🎮</title>
 <style>
-/* --- General Body & Arcade Theme --- */
+/* --- General Arcade Theme --- */
 body {
     background: #111;
     color: #fff;
@@ -15,14 +15,12 @@ body {
     padding: 0;
 }
 
-/* --- Headers --- */
-h1, h2 {
+h1,h2 { 
     margin: 20px 0;
     color: #ff0055;
     text-shadow: 0 0 5px #ff0055, 0 0 10px #ff0055;
 }
 
-/* --- Buttons --- */
 button {
     background: #222;
     border: 2px solid #ff0055;
@@ -41,15 +39,15 @@ button:hover {
     box-shadow: 0 0 10px #ff0055;
 }
 
-/* --- Menu & Game Layout --- */
-.menu, .game { display: none; margin-top: 20px; }
+/* --- Menu/Game Layout --- */
+.menu,.game { display: none; margin-top: 20px; }
 .active { display: block; }
 
-/* --- Input Fields --- */
-input[type=number] {
+/* --- Inputs --- */
+input[type=number], select {
     padding: 8px;
     font-size: 14px;
-    width: 80px;
+    width: 100px;
     text-align: center;
     border: 2px solid #ff0055;
     background: #111;
@@ -68,29 +66,38 @@ input[type=number] {
     margin: 20px auto;
 }
 
-/* --- Snake Control Buttons (Bigger Version) --- */
+/* --- Snake D-pad Buttons --- */
 #snakeControls {
     margin-top: 15px;
-    text-align: center;
+    display: grid;
+    grid-template-columns: 80px 80px 80px;
+    justify-content: center;
+    gap: 5px;
 }
 
 #snakeControls button {
-    width: 80px;      
-    height: 80px;     
-    font-size: 28px;  
-    margin: 8px;
+    width: 80px;
+    height: 80px;
+    font-size: 28px;
     background: #222;
     border: 3px solid #ff0055;
     color: #fff;
     cursor: pointer;
     text-shadow: 0 0 3px #ff0055;
-    transition: 0.2s;
     border-radius: 8px;
+    transition: 0.2s;
 }
 #snakeControls button:hover {
     background: #ff0055;
     color: #111;
     box-shadow: 0 0 15px #ff0055;
+}
+
+/* --- Glow Animation --- */
+.glow { animation: glow 1s infinite alternate; }
+@keyframes glow {
+    from { text-shadow: 0 0 5px #ff0055; }
+    to { text-shadow: 0 0 20px #ff0055; }
 }
 </style>
 </head>
@@ -109,10 +116,17 @@ input[type=number] {
 <!-- Guess the Number -->
 <div class="game" id="guess">
     <h2>🎯 GUESS THE NUMBER</h2>
+    <p>Select difficulty:</p>
+    <select id="difficulty">
+        <option value="50">Easy (1-50)</option>
+        <option value="100" selected>Medium (1-100)</option>
+        <option value="200">Hard (1-200)</option>
+    </select><br>
     <input type="number" id="guessInput" placeholder="Enter number">
     <button id="guessBtn">GUESS</button>
     <p id="message"></p>
     <p id="lives">❤️ Lives: 10</p>
+    <p>High Score: <span id="guessHighScore">0</span></p>
     <button id="restartGuess">RESTART</button>
     <button class="back">🏠 Menu</button>
 </div>
@@ -122,6 +136,7 @@ input[type=number] {
     <h2>🖱️ CLICKER GAME</h2>
     <button id="clickButton">CLICK ME!</button>
     <p>Score: <span id="score">0</span></p>
+    <p>High Score: <span id="clickerHigh">0</span></p>
     <button id="restartClicker">RESTART</button>
     <button class="back">🏠 Menu</button>
 </div>
@@ -129,170 +144,165 @@ input[type=number] {
 <!-- Snake Game -->
 <div class="game" id="snake">
     <h2>🐍 SNAKE GAME</h2>
+    <p>Select speed:</p>
+    <select id="snakeSpeed">
+        <option value="200">Slow</option>
+        <option value="150" selected>Normal</option>
+        <option value="100">Fast</option>
+    </select>
     <canvas id="snakeCanvas" width="400" height="400"></canvas>
     <p>Score: <span id="snakeScore">0</span></p>
     <button id="startSnake">START</button>
     <div id="snakeControls">
-        <button id="upBtn">⬆️</button><br>
-        <button id="leftBtn">⬅️</button>
-        <button id="downBtn">⬇️</button>
-        <button id="rightBtn">➡️</button>
+        <div></div><button id="upBtn">⬆️</button><div></div>
+        <button id="leftBtn">⬅️</button><button id="downBtn">⬇️</button><button id="rightBtn">➡️</button>
     </div>
     <button class="back">🏠 Menu</button>
 </div>
 
 <script>
 // --- Menu ---
-const games = ["menu", "guess", "clicker", "snake"];
-function openGame(id) {
-    games.forEach(g => document.getElementById(g).classList.remove("active"));
+const games = ["menu","guess","clicker","snake"];
+function openGame(id){
+    games.forEach(g=>document.getElementById(g).classList.remove("active"));
     document.getElementById(id).classList.add("active");
 }
-
-document.getElementById('openGuess').onclick = () => openGame('guess');
-document.getElementById('openClicker').onclick = () => openGame('clicker');
-document.getElementById('openSnake').onclick = () => openGame('snake');
-
-document.querySelectorAll('.back').forEach(btn => {
-    btn.onclick = () => {
-        clearInterval(snakeInterval);
-        openGame('menu');
-    };
+document.getElementById('openGuess').onclick=()=>openGame('guess');
+document.getElementById('openClicker').onclick=()=>openGame('clicker');
+document.getElementById('openSnake').onclick=()=>openGame('snake');
+document.querySelectorAll('.back').forEach(btn=>btn.onclick=()=>{
+    clearInterval(snakeInterval);
+    openGame('menu');
 });
 
 // --- Guess the Number ---
-let randomNumber = Math.floor(Math.random() * 100) + 1;
-let lives = 10;
+let randomNumber=0,lives=10;
+const guessInput=document.getElementById("guessInput");
+const guessBtn=document.getElementById("guessBtn");
+const message=document.getElementById("message");
+const livesDisplay=document.getElementById("lives");
+const restartGuess=document.getElementById("restartGuess");
+const difficulty=document.getElementById("difficulty");
+const guessHighScore=document.getElementById("guessHighScore");
 
-const guessInput = document.getElementById("guessInput");
-const guessBtn = document.getElementById("guessBtn");
-const message = document.getElementById("message");
-const livesDisplay = document.getElementById("lives");
-const restartGuess = document.getElementById("restartGuess");
+function initGuess(){
+    const max=parseInt(difficulty.value);
+    randomNumber=Math.floor(Math.random()*max)+1;
+    lives=10;
+    message.textContent="";
+    livesDisplay.textContent=`❤️ Lives: ${lives}`;
+    guessInput.value="";
+}
+difficulty.onchange=initGuess;
+restartGuess.onclick=initGuess;
+initGuess();
 
-guessBtn.onclick = () => {
-    const guess = Number(guessInput.value);
-    if (!guess) { message.textContent = "❌ Enter a number!"; return; }
-    if (guess === randomNumber) { message.textContent = "🎉 You guessed it!"; }
-    else {
+guessBtn.onclick=()=>{
+    const guess=Number(guessInput.value);
+    if(!guess){message.textContent="❌ Enter a number!"; return;}
+    if(guess===randomNumber){message.textContent="🎉 You guessed it!"; updateGuessHighScore(lives);}
+    else{
         lives--;
-        livesDisplay.textContent = `❤️ Lives: ${lives}`;
-        message.textContent = guess < randomNumber ? "⬆️ Too low!" : "⬇️ Too high!";
-        if (lives === 0) message.textContent = `💀 Game over! Number was ${randomNumber}`;
+        livesDisplay.textContent=`❤️ Lives: ${lives}`;
+        message.textContent=guess<randomNumber?"⬆️ Too low!":"⬇️ Too high!";
+        if(lives===0){message.textContent=`💀 Game over! Number was ${randomNumber}`;}
     }
-    guessInput.value = "";
+    guessInput.value="";
 };
+function updateGuessHighScore(score){
+    const high=localStorage.getItem("guessHigh")||0;
+    if(score>high)localStorage.setItem("guessHigh",score);
+    guessHighScore.textContent=localStorage.getItem("guessHigh");
+}
+updateGuessHighScore(0);
 
-restartGuess.onclick = () => {
-    randomNumber = Math.floor(Math.random() * 100) + 1;
-    lives = 10;
-    message.textContent = "";
-    livesDisplay.textContent = `❤️ Lives: ${lives}`;
-    guessInput.value = "";
-};
+// --- Clicker ---
+let score=0;
+const clickButton=document.getElementById("clickButton");
+const scoreDisplay=document.getElementById("score");
+const restartClicker=document.getElementById("restartClicker");
+const clickerHigh=document.getElementById("clickerHigh");
+function updateClickHigh(){
+    const high=localStorage.getItem("clickHigh")||0;
+    if(score>high)localStorage.setItem("clickHigh",score);
+    clickerHigh.textContent=localStorage.getItem("clickHigh");
+}
+clickButton.onclick=()=>{score++; scoreDisplay.textContent=score; updateClickHigh();}
+restartClicker.onclick=()=>{score=0; scoreDisplay.textContent=score; updateClickHigh();}
+updateClickHigh();
 
-// --- Clicker Game ---
-let score = 0;
-const clickButton = document.getElementById("clickButton");
-const scoreDisplay = document.getElementById("score");
-const restartClicker = document.getElementById("restartClicker");
+// --- Snake ---
+const canvas=document.getElementById("snakeCanvas");
+const ctx=canvas.getContext("2d");
+const snakeScoreDisplay=document.getElementById("snakeScore");
+const startSnakeBtn=document.getElementById("startSnake");
+const snakeSpeedSelect=document.getElementById("snakeSpeed");
+const upBtn=document.getElementById("upBtn");
+const downBtn=document.getElementById("downBtn");
+const leftBtn=document.getElementById("leftBtn");
+const rightBtn=document.getElementById("rightBtn");
 
-clickButton.onclick = () => { score++; scoreDisplay.textContent = score; };
-restartClicker.onclick = () => { score = 0; scoreDisplay.textContent = score; };
+let snake=[],direction="RIGHT",food={},snakeScore=0,snakeInterval,gridSize=20,canvasSize=400;
+startSnakeBtn.onclick=startSnake;
 
-// --- Snake Game ---
-const canvas = document.getElementById("snakeCanvas");
-const ctx = canvas.getContext("2d");
-
-const snakeScoreDisplay = document.getElementById("snakeScore");
-const startSnakeBtn = document.getElementById("startSnake");
-
-// On-screen buttons
-const upBtn = document.getElementById("upBtn");
-const downBtn = document.getElementById("downBtn");
-const leftBtn = document.getElementById("leftBtn");
-const rightBtn = document.getElementById("rightBtn");
-
-let snake = [];
-let direction = "RIGHT";
-let food = {};
-let snakeScore = 0;
-let snakeInterval;
-const gridSize = 20;
-const canvasSize = 400;
-
-startSnakeBtn.onclick = startSnake;
-
-// Keyboard controls
-document.addEventListener("keydown", e => {
+// Keyboard
+document.addEventListener("keydown",e=>{
     if(["ArrowUp","ArrowDown","ArrowLeft","ArrowRight"].includes(e.key)) e.preventDefault();
-    if (e.key === "ArrowUp" && direction !== "DOWN") direction = "UP";
-    if (e.key === "ArrowDown" && direction !== "UP") direction = "DOWN";
-    if (e.key === "ArrowLeft" && direction !== "RIGHT") direction = "LEFT";
-    if (e.key === "ArrowRight" && direction !== "LEFT") direction = "RIGHT";
+    if(e.key==="ArrowUp" && direction!=="DOWN") direction="UP";
+    if(e.key==="ArrowDown" && direction!=="UP") direction="DOWN";
+    if(e.key==="ArrowLeft" && direction!=="RIGHT") direction="LEFT";
+    if(e.key==="ArrowRight" && direction!=="LEFT") direction="RIGHT";
 });
+// Buttons
+upBtn.onclick=()=>{if(direction!=="DOWN") direction="UP";}
+downBtn.onclick=()=>{if(direction!=="UP") direction="DOWN";}
+leftBtn.onclick=()=>{if(direction!=="RIGHT") direction="LEFT";}
+rightBtn.onclick=()=>{if(direction!=="LEFT") direction="RIGHT";}
 
-// Button controls
-if(upBtn) upBtn.onclick = () => { if(direction !== "DOWN") direction = "UP"; };
-if(downBtn) downBtn.onclick = () => { if(direction !== "UP") direction = "DOWN"; };
-if(leftBtn) leftBtn.onclick = () => { if(direction !== "RIGHT") direction = "LEFT"; };
-if(rightBtn) rightBtn.onclick = () => { if(direction !== "LEFT") direction = "RIGHT"; };
-
-function startSnake() {
-    snake = [{x:10, y:10}];
-    direction = "RIGHT";
-    snakeScore = 0;
-    if(snakeScoreDisplay) snakeScoreDisplay.textContent = snakeScore;
+function startSnake(){
+    snake=[{x:10,y:10}];
+    direction="RIGHT";
+    snakeScore=0;
+    snakeScoreDisplay.textContent=snakeScore;
     placeFood();
     clearInterval(snakeInterval);
-    snakeInterval = setInterval(updateSnake, 150);
+    const speed=parseInt(snakeSpeedSelect.value);
+    snakeInterval=setInterval(updateSnake,speed);
     drawSnake();
-
     canvas.setAttribute("tabindex","0");
     canvas.focus();
 }
-
-function placeFood() {
-    food = {
-        x: Math.floor(Math.random() * (canvasSize / gridSize)),
-        y: Math.floor(Math.random() * (canvasSize / gridSize))
-    };
-}
-
-function updateSnake() {
-    let head = {x: snake[0].x, y: snake[0].y};
+function placeFood(){food={x:Math.floor(Math.random()*(canvasSize/gridSize)),y:Math.floor(Math.random()*(canvasSize/gridSize))};}
+function updateSnake(){
+    let head={x:snake[0].x,y:snake[0].y};
     if(direction==="UP") head.y--;
     if(direction==="DOWN") head.y++;
     if(direction==="LEFT") head.x--;
     if(direction==="RIGHT") head.x++;
-
     if(head.x<0 || head.x>=canvasSize/gridSize || head.y<0 || head.y>=canvasSize/gridSize ||
-        snake.some(seg=>seg.x===head.x && seg.y===head.y)) {
+       snake.some(seg=>seg.x===head.x && seg.y===head.y)){
         clearInterval(snakeInterval);
         alert("💀 Game Over!");
         return;
     }
-
     snake.unshift(head);
-
     if(head.x===food.x && head.y===food.y){
         snakeScore++;
-        if(snakeScoreDisplay) snakeScoreDisplay.textContent = snakeScore;
+        snakeScoreDisplay.textContent=snakeScore;
         placeFood();
-    } else snake.pop();
-
+        clearInterval(snakeInterval);
+        const speed=parseInt(snakeSpeedSelect.value)-Math.floor(snakeScore/5)*10;
+        snakeInterval=setInterval(updateSnake,speed>30?speed:30);
+    }else snake.pop();
     drawSnake();
 }
-
-function drawSnake() {
+function drawSnake(){
     ctx.fillStyle="#111";
     ctx.fillRect(0,0,canvas.width,canvas.height);
-
     ctx.fillStyle="#0f0";
-    snake.forEach(seg => ctx.fillRect(seg.x*gridSize, seg.y*gridSize, gridSize, gridSize));
-
+    snake.forEach(seg=>ctx.fillRect(seg.x*gridSize,seg.y*gridSize,gridSize,gridSize));
     ctx.fillStyle="#ff0055";
-    ctx.fillRect(food.x*gridSize, food.y*gridSize, gridSize, gridSize);
+    ctx.fillRect(food.x*gridSize,food.y*gridSize,gridSize,gridSize);
 }
 </script>
 </body>
