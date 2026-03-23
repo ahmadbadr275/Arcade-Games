@@ -1,12 +1,11 @@
 body {
     margin: 0;
-    font-family: 'Courier New', monospace;
+    font-family: monospace;
     background: radial-gradient(circle, #0f2027, #000000);
     color: #00ffcc;
     text-align: center;
 }
 
-/* Center box */
 .game {
     margin-top: 100px;
     background: rgba(0, 0, 0, 0.8);
@@ -18,18 +17,15 @@ body {
     box-shadow: 0 0 20px #00ffcc;
 }
 
-/* Title glow */
 h1 {
     color: #00ffcc;
     text-shadow: 0 0 10px #00ffcc;
 }
 
-/* Subtitle */
 .subtitle {
     color: #aaa;
 }
 
-/* Input */
 input {
     padding: 12px;
     width: 80%;
@@ -40,7 +36,6 @@ input {
     font-size: 16px;
 }
 
-/* Buttons */
 button {
     margin-top: 15px;
     padding: 12px;
@@ -49,39 +44,24 @@ button {
     border-radius: 10px;
     font-size: 16px;
     cursor: pointer;
-    transition: 0.2s;
 }
 
-/* Guess button neon */
 .guess-btn {
     background: #00ffcc;
     color: black;
 }
 
-.guess-btn:hover {
-    background: #00ccaa;
-    box-shadow: 0 0 10px #00ffcc;
-}
-
-/* Restart button */
 .restart {
     background: #ff0055;
     color: white;
 }
 
-.restart:hover {
-    background: #cc0044;
-    box-shadow: 0 0 10px #ff0055;
-}
-
-/* Message */
 #message {
     margin-top: 20px;
     font-size: 18px;
     font-weight: bold;
 }
 
-/* Lives */
 #lives {
     margin-top: 10px;
     color: #ffcc00;
