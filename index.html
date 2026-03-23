@@ -68,28 +68,29 @@ input[type=number] {
     margin: 20px auto;
 }
 
-/* --- Snake Control Buttons --- */
+/* --- Snake Control Buttons (Bigger Version) --- */
 #snakeControls {
-    margin-top: 10px;
+    margin-top: 15px;
     text-align: center;
 }
 
 #snakeControls button {
-    width: 50px;
-    height: 50px;
-    font-size: 18px;
-    margin: 5px;
+    width: 80px;      
+    height: 80px;     
+    font-size: 28px;  
+    margin: 8px;
     background: #222;
-    border: 2px solid #ff0055;
+    border: 3px solid #ff0055;
     color: #fff;
     cursor: pointer;
-    text-shadow: 0 0 2px #ff0055;
+    text-shadow: 0 0 3px #ff0055;
     transition: 0.2s;
+    border-radius: 8px;
 }
 #snakeControls button:hover {
     background: #ff0055;
     color: #111;
-    box-shadow: 0 0 10px #ff0055;
+    box-shadow: 0 0 15px #ff0055;
 }
 </style>
 </head>
@@ -247,7 +248,6 @@ function startSnake() {
     snakeInterval = setInterval(updateSnake, 150);
     drawSnake();
 
-    // Focus canvas for keyboard
     canvas.setAttribute("tabindex","0");
     canvas.focus();
 }
