@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Arcade Hub 🎮</title>
 <style>
-/* --- General Body & Font --- */
+/* --- General Body & Arcade Theme --- */
 body {
     background: #111;
     color: #fff;
@@ -67,6 +67,30 @@ input[type=number] {
     display: block;
     margin: 20px auto;
 }
+
+/* --- Snake Control Buttons --- */
+#snakeControls {
+    margin-top: 10px;
+    text-align: center;
+}
+
+#snakeControls button {
+    width: 50px;
+    height: 50px;
+    font-size: 18px;
+    margin: 5px;
+    background: #222;
+    border: 2px solid #ff0055;
+    color: #fff;
+    cursor: pointer;
+    text-shadow: 0 0 2px #ff0055;
+    transition: 0.2s;
+}
+#snakeControls button:hover {
+    background: #ff0055;
+    color: #111;
+    box-shadow: 0 0 10px #ff0055;
+}
 </style>
 </head>
 <body>
@@ -107,6 +131,12 @@ input[type=number] {
     <canvas id="snakeCanvas" width="400" height="400"></canvas>
     <p>Score: <span id="snakeScore">0</span></p>
     <button id="startSnake">START</button>
+    <div id="snakeControls">
+        <button id="upBtn">⬆️</button><br>
+        <button id="leftBtn">⬅️</button>
+        <button id="downBtn">⬇️</button>
+        <button id="rightBtn">➡️</button>
+    </div>
     <button class="back">🏠 Menu</button>
 </div>
 
@@ -132,6 +162,7 @@ document.querySelectorAll('.back').forEach(btn => {
 // --- Guess the Number ---
 let randomNumber = Math.floor(Math.random() * 100) + 1;
 let lives = 10;
+
 const guessInput = document.getElementById("guessInput");
 const guessBtn = document.getElementById("guessBtn");
 const message = document.getElementById("message");
@@ -171,39 +202,61 @@ restartClicker.onclick = () => { score = 0; scoreDisplay.textContent = score; };
 // --- Snake Game ---
 const canvas = document.getElementById("snakeCanvas");
 const ctx = canvas.getContext("2d");
-const startSnakeBtn = document.getElementById("startSnake");
+
 const snakeScoreDisplay = document.getElementById("snakeScore");
+const startSnakeBtn = document.getElementById("startSnake");
+
+// On-screen buttons
+const upBtn = document.getElementById("upBtn");
+const downBtn = document.getElementById("downBtn");
+const leftBtn = document.getElementById("leftBtn");
+const rightBtn = document.getElementById("rightBtn");
 
 let snake = [];
 let direction = "RIGHT";
 let food = {};
 let snakeScore = 0;
 let snakeInterval;
+const gridSize = 20;
+const canvasSize = 400;
 
 startSnakeBtn.onclick = startSnake;
 
-// Snake controls
+// Keyboard controls
 document.addEventListener("keydown", e => {
-    if (!document.getElementById("snake").classList.contains("active")) return;
+    if(["ArrowUp","ArrowDown","ArrowLeft","ArrowRight"].includes(e.key)) e.preventDefault();
     if (e.key === "ArrowUp" && direction !== "DOWN") direction = "UP";
     if (e.key === "ArrowDown" && direction !== "UP") direction = "DOWN";
     if (e.key === "ArrowLeft" && direction !== "RIGHT") direction = "LEFT";
     if (e.key === "ArrowRight" && direction !== "LEFT") direction = "RIGHT";
 });
 
+// Button controls
+if(upBtn) upBtn.onclick = () => { if(direction !== "DOWN") direction = "UP"; };
+if(downBtn) downBtn.onclick = () => { if(direction !== "UP") direction = "DOWN"; };
+if(leftBtn) leftBtn.onclick = () => { if(direction !== "RIGHT") direction = "LEFT"; };
+if(rightBtn) rightBtn.onclick = () => { if(direction !== "LEFT") direction = "RIGHT"; };
+
 function startSnake() {
     snake = [{x:10, y:10}];
     direction = "RIGHT";
     snakeScore = 0;
-    snakeScoreDisplay.textContent = snakeScore;
+    if(snakeScoreDisplay) snakeScoreDisplay.textContent = snakeScore;
     placeFood();
     clearInterval(snakeInterval);
-    snakeInterval = setInterval(updateSnake, 120);
-    drawSnake(); // draw immediately
+    snakeInterval = setInterval(updateSnake, 150);
+    drawSnake();
+
+    // Focus canvas for keyboard
+    canvas.setAttribute("tabindex","0");
+    canvas.focus();
 }
 
 function placeFood() {
-    food = {x: Math.floor(Math.random()*20), y: Math.floor(Math.random()*20)};
+    food = {
+        x: Math.floor(Math.random() * (canvasSize / gridSize)),
+        y: Math.floor(Math.random() * (canvasSize / gridSize))
+    };
 }
 
 function updateSnake() {
@@ -213,7 +266,8 @@ function updateSnake() {
     if(direction==="LEFT") head.x--;
     if(direction==="RIGHT") head.x++;
 
-    if(head.x<0 || head.x>=20 || head.y<0 || head.y>=20 || snake.some(seg=>seg.x===head.x && seg.y===head.y)) {
+    if(head.x<0 || head.x>=canvasSize/gridSize || head.y<0 || head.y>=canvasSize/gridSize ||
+        snake.some(seg=>seg.x===head.x && seg.y===head.y)) {
         clearInterval(snakeInterval);
         alert("💀 Game Over!");
         return;
@@ -223,22 +277,22 @@ function updateSnake() {
 
     if(head.x===food.x && head.y===food.y){
         snakeScore++;
-        snakeScoreDisplay.textContent = snakeScore;
+        if(snakeScoreDisplay) snakeScoreDisplay.textContent = snakeScore;
         placeFood();
     } else snake.pop();
 
     drawSnake();
 }
 
-function drawSnake(){
-    ctx.fillStyle="#111"; // canvas background
+function drawSnake() {
+    ctx.fillStyle="#111";
     ctx.fillRect(0,0,canvas.width,canvas.height);
 
-    ctx.fillStyle="#0f0"; // snake
-    snake.forEach(seg => ctx.fillRect(seg.x*20, seg.y*20, 20,20));
+    ctx.fillStyle="#0f0";
+    snake.forEach(seg => ctx.fillRect(seg.x*gridSize, seg.y*gridSize, gridSize, gridSize));
 
-    ctx.fillStyle="#ff0055"; // food
-    ctx.fillRect(food.x*20, food.y*20, 20,20);
+    ctx.fillStyle="#ff0055";
+    ctx.fillRect(food.x*gridSize, food.y*gridSize, gridSize, gridSize);
 }
 </script>
 </body>
