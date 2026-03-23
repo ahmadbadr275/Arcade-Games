@@ -108,16 +108,30 @@ canvas{background:#111;border:2px solid #ff0055;display:block;margin:20px auto;}
 <script>
 // --- Menu ---
 const games=["menu","guess","clicker","snake","f1","brick"];
-function openGame(id){games.forEach(g=>document.getElementById(g).classList.remove("active"));document.getElementById(id).classList.add("active");}
+function openGame(id){
+    games.forEach(g=>document.getElementById(g).classList.remove("active"));
+    document.getElementById(id).classList.add("active");
+    clearAllIntervals();
+}
 document.getElementById('openGuess').onclick=()=>openGame('guess');
 document.getElementById('openClicker').onclick=()=>openGame('clicker');
 document.getElementById('openSnake').onclick=()=>openGame('snake');
 document.getElementById('openF1').onclick=()=>openGame('f1');
 document.getElementById('openBrick').onclick=()=>openGame('brick');
-document.querySelectorAll('.back').forEach(btn=>btn.onclick=()=>{
-    clearInterval(snakeInterval); clearInterval(f1Interval); clearInterval(brickInterval);
-    openGame('menu');
+
+document.querySelectorAll('.back').forEach(btn=>{
+    btn.onclick = () => {
+        clearAllIntervals();
+        openGame('menu');
+    }
 });
+function clearAllIntervals(){
+    clearInterval(snakeInterval);
+    clearInterval(f1Interval);
+    clearInterval(brickInterval);
+    moveLeft = moveRight = false;
+    up = down = left = right = false;
+}
 
 // --- Guess Game ---
 let randomNumber=0,lives=10;
@@ -168,13 +182,59 @@ const snakeScoreDisplay=document.getElementById("snakeScore"); const startSnakeB
 const snakeSpeedSelect=document.getElementById("snakeSpeed");
 const upBtn=document.getElementById("upBtn"); const downBtn=document.getElementById("downBtn"); const leftBtn=document.getElementById("leftBtn"); const rightBtn=document.getElementById("rightBtn");
 let snake=[],direction="RIGHT",food={},snakeScore=0,snakeInterval,gridSize=20,canvasSize=400;
+let up=false,down=false,left=false,right=false;
 startSnakeBtn.onclick=startSnake;
-document.addEventListener("keydown",e=>{if(["ArrowUp","ArrowDown","ArrowLeft","ArrowRight"].includes(e.key)) e.preventDefault(); if(e.key==="ArrowUp" && direction!=="DOWN") direction="UP"; if(e.key==="ArrowDown" && direction!=="UP") direction="DOWN"; if(e.key==="ArrowLeft" && direction!=="RIGHT") direction="LEFT"; if(e.key==="ArrowRight" && direction!=="LEFT") direction="RIGHT";});
-upBtn.onclick=()=>{if(direction!=="DOWN") direction="UP";}; downBtn.onclick=()=>{if(direction!=="UP") direction="DOWN";}; leftBtn.onclick=()=>{if(direction!=="RIGHT") direction="LEFT";}; rightBtn.onclick=()=>{if(direction!=="LEFT") direction="RIGHT";};
-function startSnake(){snake=[{x:10,y:10}]; direction="RIGHT"; snakeScore=0; snakeScoreDisplay.textContent=snakeScore; placeFood(); clearInterval(snakeInterval); const speed=parseInt(snakeSpeedSelect.value); snakeInterval=setInterval(updateSnake,speed); drawSnake(); snakeCanvas.setAttribute("tabindex","0"); snakeCanvas.focus();}
+
+// Keyboard
+document.addEventListener("keydown",e=>{
+    if(["ArrowUp","ArrowDown","ArrowLeft","ArrowRight"].includes(e.key)) e.preventDefault();
+    if(e.key==="ArrowUp" && direction!=="DOWN") direction="UP";
+    if(e.key==="ArrowDown" && direction!=="UP") direction="DOWN";
+    if(e.key==="ArrowLeft" && direction!=="RIGHT") direction="LEFT";
+    if(e.key==="ArrowRight" && direction!=="LEFT") direction="RIGHT";
+});
+// Buttons
+upBtn.onclick=()=>{if(direction!=="DOWN") direction="UP";}
+downBtn.onclick=()=>{if(direction!=="UP") direction="DOWN";}
+leftBtn.onclick=()=>{if(direction!=="RIGHT") direction="LEFT";}
+rightBtn.onclick=()=>{if(direction!=="LEFT") direction="RIGHT";}
+
+function startSnake(){
+    snake=[{x:10,y:10}];
+    direction="RIGHT";
+    snakeScore=0;
+    snakeScoreDisplay.textContent=snakeScore;
+    placeFood();
+    clearInterval(snakeInterval);
+    const speed=parseInt(snakeSpeedSelect.value);
+    snakeInterval=setInterval(updateSnake,speed);
+}
 function placeFood(){food={x:Math.floor(Math.random()*(canvasSize/gridSize)),y:Math.floor(Math.random()*(canvasSize/gridSize))};}
-function updateSnake(){let head={x:snake[0].x,y:snake[0].y};if(direction==="UP") head.y--; if(direction==="DOWN") head.y++; if(direction==="LEFT") head.x--; if(direction==="RIGHT") head.x++; if(head.x<0 || head.x>=canvasSize/gridSize || head.y<0 || head.y>=canvasSize/gridSize || snake.some(seg=>seg.x===head.x && seg.y===head.y)){clearInterval(snakeInterval); alert("💀 Game Over!"); return;} snake.unshift(head); if(head.x===food.x && head.y===food.y){snakeScore++; snakeScoreDisplay.textContent=snakeScore; placeFood(); clearInterval(snakeInterval); const speed=parseInt(snakeSpeedSelect.value)-Math.floor(snakeScore/5)*10; snakeInterval=setInterval(updateSnake,speed>30?speed:30);} else snake.pop(); drawSnake();}
-function drawSnake(){sCtx.fillStyle="#111"; sCtx.fillRect(0,0,snakeCanvas.width,snakeCanvas.height); sCtx.fillStyle="#0f0"; snake.forEach(seg=>sCtx.fillRect(seg.x*gridSize,seg.y*gridSize,gridSize,gridSize)); sCtx.fillStyle="#ff0055"; sCtx.fillRect(food.x*gridSize,food.y*gridSize,gridSize,gridSize);}
+function updateSnake(){
+    let head={x:snake[0].x,y:snake[0].y};
+    if(direction==="UP") head.y--;
+    if(direction==="DOWN") head.y++;
+    if(direction==="LEFT") head.x--;
+    if(direction==="RIGHT") head.x++;
+    if(head.x<0 || head.x>=canvasSize/gridSize || head.y<0 || head.y>=canvasSize/gridSize || snake.some(seg=>seg.x===head.x && seg.y===head.y)){
+        clearInterval(snakeInterval); alert("💀 Game Over!"); return;
+    }
+    snake.unshift(head);
+    if(head.x===food.x && head.y===food.y){
+        snakeScore++;
+        snakeScoreDisplay.textContent=snakeScore;
+        placeFood();
+        clearInterval(snakeInterval);
+        const speed=parseInt(snakeSpeedSelect.value)-Math.floor(snakeScore/5)*10;
+        snakeInterval=setInterval(updateSnake,speed>30?speed:30);
+    } else snake.pop();
+    drawSnake();
+}
+function drawSnake(){
+    sCtx.fillStyle="#111"; sCtx.fillRect(0,0,snakeCanvas.width,snakeCanvas.height);
+    sCtx.fillStyle="#0f0"; snake.forEach(seg=>sCtx.fillRect(seg.x*gridSize,seg.y*gridSize,gridSize,gridSize));
+    sCtx.fillStyle="#ff0055"; sCtx.fillRect(food.x*gridSize,food.y*gridSize,gridSize,gridSize);
+}
 
 // --- F1 Racing Game ---
 const f1Canvas=document.getElementById("f1Canvas"); const f1Ctx=f1Canvas.getContext("2d");
@@ -184,20 +244,7 @@ let f1Car={x:180,y:500,width:40,height:60}; let obstacles=[]; let f1Score=0; let
 startF1Btn.onclick=startF1;
 document.addEventListener("keydown", e=>{if(e.key==="ArrowLeft") moveLeft=true; if(e.key==="ArrowRight") moveRight=true;});
 document.addEventListener("keyup", e=>{if(e.key==="ArrowLeft") moveLeft=false; if(e.key==="ArrowRight") moveRight=false;});
-leftF1.onmousedown=()=>moveLeft=true; leftF1.onmouseup=()=>moveLeft=false; rightF1.onmousedown=()=>moveRight=true; rightF1.onmouseup=()=>moveRight=false;
+leftF1.onclick=()=>{moveLeft=true; setTimeout(()=>moveLeft=false,100);}
+rightF1.onclick=()=>{moveRight=true; setTimeout(()=>moveRight=false,100);}
 function startF1(){f1Car={x:180,y:500,width:40,height:60}; obstacles=[]; f1Score=0; f1ScoreDisplay.textContent=f1Score; clearInterval(f1Interval); f1Interval=setInterval(updateF1,30);}
 function updateF1(){f1Ctx.fillStyle="#111"; f1Ctx.fillRect(0,0,f1Canvas.width,f1Canvas.height); if(moveLeft) f1Car.x-=5; if(moveRight) f1Car.x+=5; if(f1Car.x<0) f1Car.x=0; if(f1Car.x+f1Car.width>f1Canvas.width) f1Car.x=f1Canvas.width-f1Car.width; f1Ctx.fillStyle="#0f0"; f1Ctx.fillRect(f1Car.x,f1Car.y,f1Car.width,f1Car.height); if(Math.random()<0.02){obstacles.push({x:Math.random()*(f1Canvas.width-40), y:-60, width:40, height:60});} for(let i=obstacles.length-1;i>=0;i--){let ob=obstacles[i]; ob.y+=5; f1Ctx.fillStyle="#ff0055"; f1Ctx.fillRect(ob.x,ob.y,ob.width,ob.height); if(f1Car.x<ob.x+ob.width && f1Car.x+f1Car.width>ob.x && f1Car.y<ob.y+ob.height && f1Car.y+f1Car.height>ob.y){clearInterval(f1Interval); alert("💥 Crash! Distance: "+f1Score); return;} if(ob.y>f1Canvas.height) obstacles.splice(i,1);} f1Score++; f1ScoreDisplay.textContent=f1Score;}
-
-// --- Brick Breaker ---
-const brickCanvas=document.getElementById("brickCanvas"); const brickCtx=brickCanvas.getContext("2d");
-const brickScoreDisplay=document.getElementById("brickScore"); const startBrickBtn=document.getElementById("startBrick");
-const leftBrick=document.getElementById("leftBrick"); const rightBrick=document.getElementById("rightBrick");
-let paddle={x:160,y:360,width:80,height:10},ball={x:200,y:350,dx:3,dy:-3,r:8},bricks=[],brickRows=3,brickCols=5,brickWidth=70,brickHeight=20,brickPadding=10,brickOffsetTop=30,brickOffsetLeft=20,brickScore=0;
-let brickInterval;
-startBrickBtn.onclick=startBrick;
-document.addEventListener("keydown", e=>{if(e.key==="ArrowLeft") paddle.x-=20; if(e.key==="ArrowRight") paddle.x+=20;});
-leftBrick.onmousedown=()=>paddle.x-=10; rightBrick.onmousedown=()=>paddle.x+=10;
-function startBrick(){bricks=[]; for(let c=0;c<brickCols;c++){bricks[c]=[]; for(let r=0;r<brickRows;r++){bricks[c][r]={x:0,y:0,status:1};}} paddle.x=160; ball.x=200; ball.y=350; brickScore=0; brickScoreDisplay.textContent=brickScore; clearInterval(brickInterval); brickInterval=setInterval(updateBrick,20);}
-function updateBrick(){brickCtx.fillStyle="#111"; brickCtx.fillRect(0,0,brickCanvas.width,brickCanvas.height);
-for(let c=0;c<brickCols;c++){for(let r=0;r<brickRows;r++){if(bricks[c][r].status==1){let brickX=c*(brickWidth+brickPadding)+brickOffsetLeft; let brickY=r*(brickHeight+brickPadding)+brickOffsetTop; bricks[c][r].x=brickX; bricks[c][r].y=brickY; brickCtx.fillStyle="#ff0055"; brickCtx.fillRect(brickX,brickY,brickWidth,brickHeight);}}}
-ball.x+=ball.dx; ball
