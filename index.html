@@ -98,10 +98,10 @@ canvas {
   <canvas id="snakeCanvas" width="400" height="400"></canvas>
   <button onclick="startSnake()">Start</button>
   <div id="snakeControls">
-    <button onclick="dir='UP'">⬆️ Up</button>
-    <button onclick="dir='LEFT'">⬅️ Left</button>
-    <button onclick="dir='DOWN'">⬇️ Down</button>
-    <button onclick="dir='RIGHT'">➡️ Right</button>
+    <button onclick="setDir('UP')">⬆️ Up</button>
+    <button onclick="setDir('LEFT')">⬅️ Left</button>
+    <button onclick="setDir('DOWN')">⬇️ Down</button>
+    <button onclick="setDir('RIGHT')">➡️ Right</button>
   </div>
   <button onclick="back()">Back</button>
 </div>
@@ -125,8 +125,8 @@ canvas {
   <canvas id="brickCanvas" width="400" height="400"></canvas>
   <button onclick="startBrick()">Start</button>
   <div id="brickControls">
-    <button onclick="paddle.x-=20">⬅️ Left</button>
-    <button onclick="paddle.x+=20">➡️ Right</button>
+    <button onclick="movePaddle(-20)">⬅️ Left</button>
+    <button onclick="movePaddle(20)">➡️ Right</button>
   </div>
   <button onclick="back()">Back</button>
 </div>
@@ -156,8 +156,11 @@ let number = Math.floor(Math.random()*100)+1;
 function guess(){
   let g = document.getElementById("guessInput").value;
   let msg = document.getElementById("msg");
-
-  if(g == number){ msg.textContent="🎉 Correct!"; beep(600); }
+  if(g == number){
+    msg.textContent="🎉 Correct!";
+    beep(600);
+    number = Math.floor(Math.random()*100)+1; // reset for new game
+  }
   else if(g < number){ msg.textContent="Too low"; beep(200); }
   else { msg.textContent="Too high"; beep(200); }
 }
@@ -172,7 +175,8 @@ function clickScore(){
 
 // SNAKE
 let sctx = document.getElementById("snakeCanvas").getContext("2d");
-let snake, food, dir, snakeInt;
+let snake, food, snakeInt;
+let dir = "RIGHT"; // global direction
 
 function startSnake(){
   snake=[{x:10,y:10}];
@@ -180,6 +184,10 @@ function startSnake(){
   food={x:5,y:5};
   clearInterval(snakeInt);
   snakeInt=setInterval(updateSnake,100);
+}
+
+function setDir(d){
+  dir = d;
 }
 
 document.addEventListener("keydown",e=>{
@@ -249,19 +257,10 @@ function moveRight(){ f1Car.x += 20; if(f1Car.x>360) f1Car.x=360; }
 function activateBoost(){ boost=true; setTimeout(()=>boost=false,2000); beep(800); }
 
 function drawF1Car(x, y){
-  // Car body
   fctx.fillStyle = "red"; 
   fctx.fillRect(x+10, y+10, 20, 40);
-
-  // Front wing
-  fctx.fillStyle = "#555";
-  fctx.fillRect(x, y+5, 40, 10);
-
-  // Rear wing
-  fctx.fillStyle = "#555";
-  fctx.fillRect(x+5, y+45, 30, 5);
-
-  // Wheels
+  fctx.fillStyle = "#555"; fctx.fillRect(x, y+5, 40, 10);
+  fctx.fillStyle = "#555"; fctx.fillRect(x+5, y+45, 30, 5);
   fctx.fillStyle = "black";
   fctx.beginPath();
   fctx.arc(x+5, y+15, 5, 0, Math.PI*2);
@@ -284,32 +283,23 @@ function drawObstacle(x, y){
 }
 
 function updateF1(){
-  fctx.fillStyle="#333"; // track
-  fctx.fillRect(0,0,400,500);
-
-  // Road lines
-  fctx.strokeStyle = "white";
-  fctx.lineWidth = 4;
+  fctx.fillStyle="#333"; fctx.fillRect(0,0,400,500);
+  fctx.strokeStyle = "white"; fctx.lineWidth = 4;
   for(let i=-20; i<25; i++){
     fctx.beginPath();
     fctx.moveTo(198, i*50 + roadOffset%50);
     fctx.lineTo(198, i*50 + 20 + roadOffset%50);
     fctx.stroke();
   }
-
   roadOffset += boost?15:5;
   distance += boost?2:1;
-
-  // Draw player car
   drawF1Car(f1Car.x, f1Car.y);
 
-  // Spawn obstacles
   if(Math.random()<0.02){
     let ox = Math.floor(Math.random()*9)*40;
     obstacles.push({x:ox, y:-50});
   }
 
-  // Update obstacles
   for(let i=obstacles.length-1;i>=0;i--){
     let o = obstacles[i];
     o.y += boost?15:5;
@@ -333,63 +323,44 @@ function startBrick(){
   paddle={x:150};
   ball={x:200,y:200,dx:3,dy:-3};
   bricks=[];
-
   for(let i=0;i<5;i++){
     for(let j=0;j<3;j++){
       bricks.push({x:i*80+20,y:j*30+30,hit:false});
     }
   }
-
   clearInterval(bInt);
   bInt=setInterval(updateBrick,20);
 }
 
+function movePaddle(dx){
+  paddle.x += dx;
+  if(paddle.x < 0) paddle.x = 0;
+  if(paddle.x > 320) paddle.x = 320;
+}
+
 document.addEventListener("keydown",e=>{
-  if(e.key==="ArrowLeft") paddle.x-=20;
-  if(e.key==="ArrowRight") paddle.x+=20;
+  if(e.key==="ArrowLeft") movePaddle(-20);
+  if(e.key==="ArrowRight") movePaddle(20);
 });
 
 function updateBrick(){
-  bctx.fillStyle="#000";
-  bctx.fillRect(0,0,400,400);
-
-  bctx.fillStyle="lime";
-  bctx.fillRect(paddle.x,370,80,10);
-
-  bctx.beginPath();
-  bctx.arc(ball.x,ball.y,8,0,Math.PI*2);
-  bctx.fill();
-  ball.x+=ball.dx;
-  ball.y+=ball.dy;
-
+  bctx.fillStyle="#000"; bctx.fillRect(0,0,400,400);
+  bctx.fillStyle="lime"; bctx.fillRect(paddle.x,370,80,10);
+  bctx.beginPath(); bctx.arc(ball.x,ball.y,8,0,Math.PI*2); bctx.fill();
+  ball.x+=ball.dx; ball.y+=ball.dy;
   if(ball.x<0||ball.x>400) ball.dx*=-1;
   if(ball.y<0) ball.dy*=-1;
-
-  if(ball.y>370 && ball.x>paddle.x && ball.x<paddle.x+80){
-    ball.dy*=-1;
-    beep(400);
-  }
-
-  if(ball.y>400){
-    clearInterval(bInt);
-    beep(100);
-    alert("Game Over");
-  }
-
+  if(ball.y>370 && ball.x>paddle.x && ball.x<paddle.x+80){ ball.dy*=-1; beep(400); }
+  if(ball.y>400){ clearInterval(bInt); beep(100); alert("Game Over"); }
   bricks.forEach(b=>{
     if(!b.hit){
-      bctx.fillStyle="#ff0055";
-      bctx.fillRect(b.x,b.y,60,20);
-
+      bctx.fillStyle="#ff0055"; bctx.fillRect(b.x,b.y,60,20);
       if(ball.x>b.x && ball.x<b.x+60 && ball.y>b.y && ball.y<b.y+20){
-        b.hit=true;
-        ball.dy*=-1;
-        beep(700);
+        b.hit=true; ball.dy*=-1; beep(700);
       }
     }
   });
 }
-
 </script>
 </body>
 </html>
