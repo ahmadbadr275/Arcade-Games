@@ -7,30 +7,30 @@
 
 <style>
 body {
-  background:#111;
+  background:#0a0a0a;
   color:#fff;
   font-family:monospace;
   text-align:center;
-  margin:0;
 }
 
 h1,h2 {
   color:#ff0055;
-  text-shadow:0 0 10px #ff0055;
+  text-shadow:0 0 15px #ff0055;
 }
 
 button {
-  background:#222;
+  background:#111;
   border:2px solid #ff0055;
   color:#fff;
-  padding:12px 20px;
+  padding:12px;
   margin:10px;
   cursor:pointer;
+  font-size:14px;
 }
 
 button:hover {
   background:#ff0055;
-  color:#111;
+  color:#000;
 }
 
 .menu,.game { display:none; }
@@ -38,9 +38,8 @@ button:hover {
 
 canvas {
   border:2px solid #ff0055;
-  display:block;
   margin:20px auto;
-  pointer-events:none;
+  display:block;
 }
 </style>
 </head>
@@ -57,139 +56,244 @@ canvas {
   <button onclick="openGame('brick')">🧱 Brick</button>
 </div>
 
+<!-- GUESS -->
 <div id="guess" class="game">
-  <h2>Guess Game</h2>
+  <h2>Guess</h2>
   <input id="guessInput" type="number">
-  <button onclick="checkGuess()">Guess</button>
-  <p id="guessMsg"></p>
-  <button onclick="openGame('menu')">Back</button>
+  <button onclick="guess()">Guess</button>
+  <p id="msg"></p>
+  <button onclick="back()">Back</button>
 </div>
 
+<!-- CLICKER -->
 <div id="clicker" class="game">
   <h2>Clicker</h2>
   <button onclick="clickScore()">CLICK</button>
-  <p id="clickScore">0</p>
-  <button onclick="openGame('menu')">Back</button>
+  <p id="score">0</p>
+  <button onclick="back()">Back</button>
 </div>
 
+<!-- SNAKE -->
 <div id="snake" class="game">
   <h2>Snake</h2>
   <canvas id="snakeCanvas" width="400" height="400"></canvas>
   <button onclick="startSnake()">Start</button>
-  <button onclick="openGame('menu')">Back</button>
+  <button onclick="back()">Back</button>
 </div>
 
+<!-- F1 -->
 <div id="f1" class="game">
-  <h2>F1 Racing</h2>
+  <h2>F1</h2>
   <canvas id="f1Canvas" width="400" height="500"></canvas>
   <button onclick="startF1()">Start</button>
   <button onclick="moveLeft()">⬅️</button>
   <button onclick="moveRight()">➡️</button>
-  <button onclick="openGame('menu')">Back</button>
+  <button onclick="back()">Back</button>
 </div>
 
+<!-- BRICK -->
 <div id="brick" class="game">
-  <h2>Brick Breaker</h2>
+  <h2>Brick</h2>
   <canvas id="brickCanvas" width="400" height="400"></canvas>
   <button onclick="startBrick()">Start</button>
-  <button onclick="openGame('menu')">Back</button>
+  <button onclick="back()">Back</button>
 </div>
 
 <script>
+
+// SOUND
+function beep(freq=300){
+  let ctx = new (window.AudioContext||window.webkitAudioContext)();
+  let osc = ctx.createOscillator();
+  osc.frequency.value=freq;
+  osc.connect(ctx.destination);
+  osc.start();
+  setTimeout(()=>osc.stop(),100);
+}
 
 // MENU
 function openGame(id){
   document.querySelectorAll('.menu,.game').forEach(e=>e.classList.remove('active'));
   document.getElementById(id).classList.add('active');
 }
+function back(){
+  openGame('menu');
+}
 
 // GUESS
-let random = Math.floor(Math.random()*100)+1;
-function checkGuess(){
-  let val = Number(document.getElementById("guessInput").value);
-  let msg = document.getElementById("guessMsg");
+let number = Math.floor(Math.random()*100)+1;
+function guess(){
+  let g = document.getElementById("guessInput").value;
+  let msg = document.getElementById("msg");
 
-  if(!val) return msg.textContent="Enter number";
-  if(val === random) msg.textContent="🎉 Correct!";
-  else if(val < random) msg.textContent="Too low";
-  else msg.textContent="Too high";
+  if(g == number){ msg.textContent="🎉 Correct!"; beep(600); }
+  else if(g < number){ msg.textContent="Too low"; beep(200); }
+  else { msg.textContent="Too high"; beep(200); }
 }
 
 // CLICKER
-let clicks = 0;
+let score=0;
 function clickScore(){
-  clicks++;
-  document.getElementById("clickScore").textContent = clicks;
+  score++;
+  document.getElementById("score").textContent=score;
+  beep(500);
 }
 
 // SNAKE
 let sctx = document.getElementById("snakeCanvas").getContext("2d");
+let snake, food, dir, snakeInt;
+
 function startSnake(){
-  sctx.fillStyle="#111";
+  snake=[{x:10,y:10}];
+  dir="RIGHT";
+  food={x:5,y:5};
+  clearInterval(snakeInt);
+  snakeInt=setInterval(updateSnake,100);
+}
+
+document.addEventListener("keydown",e=>{
+  if(e.key==="ArrowUp"&&dir!=="DOWN")dir="UP";
+  if(e.key==="ArrowDown"&&dir!=="UP")dir="DOWN";
+  if(e.key==="ArrowLeft"&&dir!=="RIGHT")dir="LEFT";
+  if(e.key==="ArrowRight"&&dir!=="LEFT")dir="RIGHT";
+});
+
+function updateSnake(){
+  let head={...snake[0]};
+  if(dir==="UP")head.y--;
+  if(dir==="DOWN")head.y++;
+  if(dir==="LEFT")head.x--;
+  if(dir==="RIGHT")head.x++;
+
+  if(head.x<0||head.y<0||head.x>=20||head.y>=20||
+     snake.some(s=>s.x===head.x&&s.y===head.y)){
+    clearInterval(snakeInt);
+    beep(100);
+    alert("Game Over");
+    return;
+  }
+
+  snake.unshift(head);
+
+  if(head.x===food.x&&head.y===food.y){
+    food={x:Math.floor(Math.random()*20),y:Math.floor(Math.random()*20)};
+    beep(700);
+  } else snake.pop();
+
+  drawSnake();
+}
+
+function drawSnake(){
+  sctx.fillStyle="#000";
   sctx.fillRect(0,0,400,400);
+
   sctx.fillStyle="lime";
-  sctx.fillRect(180,180,20,20);
+  snake.forEach(s=>sctx.fillRect(s.x*20,s.y*20,20,20));
+
+  sctx.fillStyle="#ff0055";
+  sctx.fillRect(food.x*20,food.y*20,20,20);
 }
 
 // F1
 let fctx = document.getElementById("f1Canvas").getContext("2d");
-let carX = 180;
+let car={x:180,y:450}, obs=[], f1Int;
 
 function startF1(){
-  drawCar();
+  car.x=180; obs=[];
+  clearInterval(f1Int);
+  f1Int=setInterval(updateF1,30);
 }
 
-function drawCar(){
-  fctx.clearRect(0,0,400,500);
+function moveLeft(){ car.x-=20; }
+function moveRight(){ car.x+=20; }
+
+function updateF1(){
+  fctx.fillStyle="#000";
+  fctx.fillRect(0,0,400,500);
+
   fctx.fillStyle="lime";
-  fctx.fillRect(carX,450,40,40);
-}
+  fctx.fillRect(car.x,car.y,40,50);
 
-function moveLeft(){
-  carX -= 10;
-  if(carX < 0) carX = 0;
-  drawCar();
-}
+  if(Math.random()<0.03){
+    obs.push({x:Math.random()*360,y:0});
+  }
 
-function moveRight(){
-  carX += 10;
-  if(carX > 360) carX = 360;
-  drawCar();
+  obs.forEach(o=>{
+    o.y+=5;
+    fctx.fillStyle="#ff0055";
+    fctx.fillRect(o.x,o.y,40,50);
+
+    if(car.x<o.x+40 && car.x+40>o.x && car.y<o.y+50 && car.y+50>o.y){
+      clearInterval(f1Int);
+      beep(100);
+      alert("Crash!");
+    }
+  });
 }
 
 // BRICK
 let bctx = document.getElementById("brickCanvas").getContext("2d");
-let ballX = 200, ballY = 200, dx = 3, dy = -3;
-let brickInterval;
+let ball, paddle, bricks, bInt;
 
 function startBrick(){
-  clearInterval(brickInterval);
-  ballX = 200;
-  ballY = 200;
-  dx = 3;
-  dy = -3;
-  brickInterval = setInterval(updateBrick,20);
+  paddle={x:150};
+  ball={x:200,y:200,dx:3,dy:-3};
+  bricks=[];
+
+  for(let i=0;i<5;i++){
+    for(let j=0;j<3;j++){
+      bricks.push({x:i*80+20,y:j*30+30,hit:false});
+    }
+  }
+
+  clearInterval(bInt);
+  bInt=setInterval(updateBrick,20);
 }
 
+document.addEventListener("keydown",e=>{
+  if(e.key==="ArrowLeft") paddle.x-=20;
+  if(e.key==="ArrowRight") paddle.x+=20;
+});
+
 function updateBrick(){
-  bctx.clearRect(0,0,400,400);
+  bctx.fillStyle="#000";
+  bctx.fillRect(0,0,400,400);
+
+  bctx.fillStyle="lime";
+  bctx.fillRect(paddle.x,370,80,10);
 
   bctx.beginPath();
-  bctx.arc(ballX,ballY,8,0,Math.PI*2);
-  bctx.fillStyle="#ff0055";
+  bctx.arc(ball.x,ball.y,8,0,Math.PI*2);
   bctx.fill();
-  bctx.closePath();
+  ball.x+=ball.dx;
+  ball.y+=ball.dy;
 
-  ballX += dx;
-  ballY += dy;
+  if(ball.x<0||ball.x>400) ball.dx*=-1;
+  if(ball.y<0) ball.dy*=-1;
 
-  if(ballX > 392 || ballX < 8) dx *= -1;
-  if(ballY < 8) dy *= -1;
-
-  if(ballY > 400){
-    clearInterval(brickInterval);
-    alert("💀 Game Over");
+  if(ball.y>370 && ball.x>paddle.x && ball.x<paddle.x+80){
+    ball.dy*=-1;
+    beep(400);
   }
+
+  if(ball.y>400){
+    clearInterval(bInt);
+    beep(100);
+    alert("Game Over");
+  }
+
+  bricks.forEach(b=>{
+    if(!b.hit){
+      bctx.fillStyle="#ff0055";
+      bctx.fillRect(b.x,b.y,60,20);
+
+      if(ball.x>b.x && ball.x<b.x+60 && ball.y>b.y && ball.y<b.y+20){
+        b.hit=true;
+        ball.dy*=-1;
+        beep(700);
+      }
+    }
+  });
 }
 
 </script>
