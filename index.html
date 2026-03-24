@@ -4,203 +4,195 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Ultimate Arcade Hub 🎮</title>
+
 <style>
-body { background:#111; color:#fff; font-family:'Press Start 2P',monospace; text-align:center; margin:0; padding:0;}
-h1,h2{margin:20px 0;color:#ff0055;text-shadow:0 0 5px #ff0055,0 0 10px #ff0055;}
-button {background:#222;border:2px solid #ff0055;color:#fff;padding:12px 25px;margin:10px;font-family:'Press Start 2P',monospace;font-size:12px;cursor:pointer;transition:0.2s;text-shadow:0 0 2px #ff0055;}
-button:hover{background:#ff0055;color:#111;box-shadow:0 0 10px #ff0055;}
-.menu,.game{display:none;margin-top:20px;}
-.active{display:block;}
-input[type=number],select{padding:8px;font-size:14px;width:100px;text-align:center;border:2px solid #ff0055;background:#111;color:#fff;text-shadow:0 0 2px #ff0055;}
-canvas{background:#111;border:2px solid #ff0055;display:block;margin:20px auto;}
-#snakeControls,#f1Controls,#brickControls{margin-top:10px;display:grid;grid-template-columns:80px 80px 80px;justify-content:center;gap:5px;}
-#snakeControls button,#f1Controls button,#brickControls button{width:80px;height:80px;font-size:28px;background:#222;border:3px solid #ff0055;color:#fff;cursor:pointer;border-radius:8px;transition:0.2s;}
-#snakeControls button:hover,#f1Controls button:hover,#brickControls button:hover{background:#ff0055;color:#111;box-shadow:0 0 15px #ff0055;}
+body {
+  background:#111;
+  color:#fff;
+  font-family:monospace;
+  text-align:center;
+  margin:0;
+}
+
+h1,h2 {
+  color:#ff0055;
+  text-shadow:0 0 10px #ff0055;
+}
+
+button {
+  background:#222;
+  border:2px solid #ff0055;
+  color:#fff;
+  padding:12px 20px;
+  margin:10px;
+  cursor:pointer;
+}
+
+button:hover {
+  background:#ff0055;
+  color:#111;
+}
+
+.menu,.game { display:none; }
+.active { display:block; }
+
+canvas {
+  border:2px solid #ff0055;
+  display:block;
+  margin:20px auto;
+  pointer-events:none;
+}
 </style>
 </head>
+
 <body>
+
 <h1>🎮 ULTIMATE ARCADE HUB</h1>
 
-<!-- Menu -->
-<div class="menu active" id="menu">
-    <p>Select a game:</p>
-    <button id="openGuess">🎯 Guess the Number</button>
-    <button id="openClicker">🖱️ Clicker Game</button>
-    <button id="openSnake">🐍 Snake Game</button>
-    <button id="openF1">🏎️ F1 Racing</button>
-    <button id="openBrick">🧱 Brick Breaker</button>
+<div id="menu" class="menu active">
+  <button onclick="openGame('guess')">🎯 Guess</button>
+  <button onclick="openGame('clicker')">🖱️ Clicker</button>
+  <button onclick="openGame('snake')">🐍 Snake</button>
+  <button onclick="openGame('f1')">🏎️ F1</button>
+  <button onclick="openGame('brick')">🧱 Brick</button>
 </div>
 
-<!-- Guess Game -->
-<div class="game" id="guess">
-    <h2>🎯 GUESS THE NUMBER</h2>
-    <select id="difficulty">
-        <option value="50">Easy (1-50)</option>
-        <option value="100" selected>Medium (1-100)</option>
-        <option value="200">Hard (1-200)</option>
-    </select><br>
-    <input type="number" id="guessInput" placeholder="Enter number">
-    <button id="guessBtn">GUESS</button>
-    <p id="message"></p>
-    <p id="lives">❤️ Lives: 10</p>
-    <p>High Score: <span id="guessHighScore">0</span></p>
-    <button id="restartGuess">RESTART</button>
-    <button class="back">🏠 Menu</button>
+<div id="guess" class="game">
+  <h2>Guess Game</h2>
+  <input id="guessInput" type="number">
+  <button onclick="checkGuess()">Guess</button>
+  <p id="guessMsg"></p>
+  <button onclick="openGame('menu')">Back</button>
 </div>
 
-<!-- Clicker Game -->
-<div class="game" id="clicker">
-    <h2>🖱️ CLICKER GAME</h2>
-    <button id="clickButton">CLICK ME!</button>
-    <p>Score: <span id="score">0</span></p>
-    <p>High Score: <span id="clickerHigh">0</span></p>
-    <button id="restartClicker">RESTART</button>
-    <button class="back">🏠 Menu</button>
+<div id="clicker" class="game">
+  <h2>Clicker</h2>
+  <button onclick="clickScore()">CLICK</button>
+  <p id="clickScore">0</p>
+  <button onclick="openGame('menu')">Back</button>
 </div>
 
-<!-- Snake Game -->
-<div class="game" id="snake">
-    <h2>🐍 SNAKE GAME</h2>
-    <select id="snakeSpeed">
-        <option value="200">Slow</option>
-        <option value="150" selected>Normal</option>
-        <option value="100">Fast</option>
-    </select>
-    <canvas id="snakeCanvas" width="400" height="400"></canvas>
-    <p>Score: <span id="snakeScore">0</span></p>
-    <button id="startSnake">START</button>
-    <div id="snakeControls">
-        <div></div><button id="upBtn">⬆️</button><div></div>
-        <button id="leftBtn">⬅️</button><button id="downBtn">⬇️</button><button id="rightBtn">➡️</button>
-    </div>
-    <button class="back">🏠 Menu</button>
+<div id="snake" class="game">
+  <h2>Snake</h2>
+  <canvas id="snakeCanvas" width="400" height="400"></canvas>
+  <button onclick="startSnake()">Start</button>
+  <button onclick="openGame('menu')">Back</button>
 </div>
 
-<!-- F1 Racing -->
-<div class="game" id="f1">
-    <h2>🏎️ F1 RACING</h2>
-    <canvas id="f1Canvas" width="400" height="600"></canvas>
-    <p>Distance: <span id="f1Score">0</span></p>
-    <button id="startF1">START</button>
-    <div id="f1Controls">
-        <button id="leftF1">⬅️</button>
-        <button id="rightF1">➡️</button>
-    </div>
-    <button class="back">🏠 Menu</button>
+<div id="f1" class="game">
+  <h2>F1 Racing</h2>
+  <canvas id="f1Canvas" width="400" height="500"></canvas>
+  <button onclick="startF1()">Start</button>
+  <button onclick="moveLeft()">⬅️</button>
+  <button onclick="moveRight()">➡️</button>
+  <button onclick="openGame('menu')">Back</button>
 </div>
 
-<!-- Brick Breaker -->
-<div class="game" id="brick">
-    <h2>🧱 BRICK BREAKER</h2>
-    <canvas id="brickCanvas" width="400" height="400"></canvas>
-    <p>Score: <span id="brickScore">0</span></p>
-    <button id="startBrick">START</button>
-    <div id="brickControls">
-        <button id="leftBrick">⬅️</button>
-        <button id="rightBrick">➡️</button>
-    </div>
-    <button class="back">🏠 Menu</button>
+<div id="brick" class="game">
+  <h2>Brick Breaker</h2>
+  <canvas id="brickCanvas" width="400" height="400"></canvas>
+  <button onclick="startBrick()">Start</button>
+  <button onclick="openGame('menu')">Back</button>
 </div>
 
 <script>
-// --- Menu and intervals ---
-const games=["menu","guess","clicker","snake","f1","brick"];
-let snakeInterval,f1Interval,brickInterval;
+
+// MENU
 function openGame(id){
-    games.forEach(g=>document.getElementById(g).classList.remove("active"));
-    document.getElementById(id).classList.add("active");
-    clearAllIntervals();
+  document.querySelectorAll('.menu,.game').forEach(e=>e.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
 }
-document.getElementById('openGuess').onclick=()=>openGame('guess');
-document.getElementById('openClicker').onclick=()=>openGame('clicker');
-document.getElementById('openSnake').onclick=()=>openGame('snake');
-document.getElementById('openF1').onclick=()=>openGame('f1');
-document.getElementById('openBrick').onclick=()=>openGame('brick');
-document.querySelectorAll('.back').forEach(btn=>btn.onclick=()=>{clearAllIntervals(); openGame('menu');});
-function clearAllIntervals(){clearInterval(snakeInterval); clearInterval(f1Interval); clearInterval(brickInterval);}
 
-// --- Guess Game ---
-let randomNumber=0,lives=10;
-const guessInput=document.getElementById("guessInput"),guessBtn=document.getElementById("guessBtn");
-const message=document.getElementById("message"),livesDisplay=document.getElementById("lives");
-const restartGuess=document.getElementById("restartGuess"),difficulty=document.getElementById("difficulty");
-const guessHighScore=document.getElementById("guessHighScore");
-function initGuess(){
-    const max=parseInt(difficulty.value);
-    randomNumber=Math.floor(Math.random()*max)+1;
-    lives=10; message.textContent=""; livesDisplay.textContent=`❤️ Lives: ${lives}`; guessInput.value="";
+// GUESS
+let random = Math.floor(Math.random()*100)+1;
+function checkGuess(){
+  let val = Number(document.getElementById("guessInput").value);
+  let msg = document.getElementById("guessMsg");
+
+  if(!val) return msg.textContent="Enter number";
+  if(val === random) msg.textContent="🎉 Correct!";
+  else if(val < random) msg.textContent="Too low";
+  else msg.textContent="Too high";
 }
-difficulty.onchange=initGuess; restartGuess.onclick=initGuess; initGuess();
-guessBtn.onclick=()=>{
-    const guess=Number(guessInput.value);
-    if(!guess){message.textContent="❌ Enter a number!"; return;}
-    if(guess===randomNumber){message.textContent="🎉 Correct!"; updateGuessHighScore(lives);}
-    else{lives--; livesDisplay.textContent=`❤️ Lives: ${lives}`; message.textContent=guess<randomNumber?"⬆️ Too low!":"⬇️ Too high!"; if(lives===0) message.textContent=`💀 Game over! Number was ${randomNumber}`;}
-    guessInput.value="";
-};
-function updateGuessHighScore(score){const high=localStorage.getItem("guessHigh")||0;if(score>high)localStorage.setItem("guessHigh",score);guessHighScore.textContent=localStorage.getItem("guessHigh");}
-updateGuessHighScore(0);
 
-// --- Clicker ---
-let score=0;
-const clickButton=document.getElementById("clickButton"),scoreDisplay=document.getElementById("score"),restartClicker=document.getElementById("restartClicker"),clickerHigh=document.getElementById("clickerHigh");
-clickButton.onclick=()=>{score++; scoreDisplay.textContent=score; updateClickerHigh();}
-restartClicker.onclick=()=>{score=0; scoreDisplay.textContent=score; updateClickerHigh();}
-function updateClickerHigh(){const high=localStorage.getItem("clickHigh")||0;if(score>high)localStorage.setItem("clickHigh",score);clickerHigh.textContent=localStorage.getItem("clickHigh");}
-updateClickerHigh();
+// CLICKER
+let clicks = 0;
+function clickScore(){
+  clicks++;
+  document.getElementById("clickScore").textContent = clicks;
+}
 
-// --- Snake ---
-const snakeCanvas=document.getElementById("snakeCanvas"),sCtx=snakeCanvas.getContext("2d");
-const snakeScoreDisplay=document.getElementById("snakeScore"),startSnakeBtn=document.getElementById("startSnake");
-const snakeSpeedSelect=document.getElementById("snakeSpeed");
-const upBtn=document.getElementById("upBtn"),downBtn=document.getElementById("downBtn"),leftBtn=document.getElementById("leftBtn"),rightBtn=document.getElementById("rightBtn");
-let snake=[],direction="RIGHT",food={},snakeScore=0,gridSize=20,canvasSize=400;
-startSnakeBtn.onclick=startSnake;
-document.addEventListener("keydown",e=>{if(e.key==="ArrowUp"&&direction!=="DOWN")direction="UP"; if(e.key==="ArrowDown"&&direction!=="UP")direction="DOWN"; if(e.key==="ArrowLeft"&&direction!=="RIGHT")direction="LEFT"; if(e.key==="ArrowRight"&&direction!=="LEFT")direction="RIGHT";});
-upBtn.onclick=()=>{if(direction!=="DOWN")direction="UP";}
-downBtn.onclick=()=>{if(direction!=="UP")direction="DOWN";}
-leftBtn.onclick=()=>{if(direction!=="RIGHT")direction="LEFT";}
-rightBtn.onclick=()=>{if(direction!=="LEFT")direction="RIGHT";}
-function startSnake(){snake=[{x:10,y:10}]; direction="RIGHT"; snakeScore=0; snakeScoreDisplay.textContent=snakeScore; placeFood(); clearInterval(snakeInterval); const speed=parseInt(snakeSpeedSelect.value); snakeInterval=setInterval(updateSnake,speed);}
-function placeFood(){food={x:Math.floor(Math.random()*(canvasSize/gridSize)),y:Math.floor(Math.random()*(canvasSize/gridSize))};}
-function updateSnake(){let head={x:snake[0].x,y:snake[0].y}; if(direction==="UP")head.y--; if(direction==="DOWN")head.y++; if(direction==="LEFT")head.x--; if(direction==="RIGHT")head.x++; if(head.x<0||head.x>=canvasSize/gridSize||head.y<0||head.y>=canvasSize/gridSize||snake.some(seg=>seg.x===head.x&&seg.y===head.y)){clearInterval(snakeInterval); alert("💀 Game Over!"); return;} snake.unshift(head); if(head.x===food.x&&head.y===food.y){snakeScore++; snakeScoreDisplay.textContent=snakeScore; placeFood(); clearInterval(snakeInterval); const speed=parseInt(snakeSpeedSelect.value)-Math.floor(snakeScore/5)*10; snakeInterval=setInterval(updateSnake,speed>30?speed:30);} else snake.pop(); drawSnake();}
-function drawSnake(){sCtx.fillStyle="#111"; sCtx.fillRect(0,0,snakeCanvas.width,snakeCanvas.height); sCtx.fillStyle="#0f0"; snake.forEach(seg=>sCtx.fillRect(seg.x*gridSize,seg.y*gridSize,gridSize,gridSize)); sCtx.fillStyle="#ff0055"; sCtx.fillRect(food.x*gridSize,food.y*gridSize,gridSize,gridSize);}
+// SNAKE
+let sctx = document.getElementById("snakeCanvas").getContext("2d");
+function startSnake(){
+  sctx.fillStyle="#111";
+  sctx.fillRect(0,0,400,400);
+  sctx.fillStyle="lime";
+  sctx.fillRect(180,180,20,20);
+}
 
-// --- F1 Racing ---
-const f1Canvas=document.getElementById("f1Canvas"),f1Ctx=f1Canvas.getContext("2d");
-const f1ScoreDisplay=document.getElementById("f1Score"),startF1Btn=document.getElementById("startF1");
-const leftF1=document.getElementById("leftF1"),rightF1=document.getElementById("rightF1");
-let f1Car={x:180,y:500,width:40,height:60},obstacles=[],f1Score=0,moveLeft=false,moveRight=false;
-startF1Btn.onclick=startF1;
-document.addEventListener("keydown",e=>{if(e.key==="ArrowLeft")moveLeft=true; if(e.key==="ArrowRight")moveRight=true;});
-document.addEventListener("keyup",e=>{if(e.key==="ArrowLeft")moveLeft=false;if(e.key==="ArrowRight")moveRight=false;});
-leftF1.onclick=()=>{moveLeft=true; setTimeout(()=>moveLeft=false,100);}
-rightF1.onclick=()=>{moveRight=true; setTimeout(()=>moveRight=false,100);}
-function startF1(){f1Car={x:180,y:500,width:40,height:60}; obstacles=[]; f1Score=0; f1ScoreDisplay.textContent=f1Score; clearInterval(f1Interval); f1Interval=setInterval(updateF1,30);}
-function updateF1(){f1Ctx.fillStyle="#111"; f1Ctx.fillRect(0,0,f1Canvas.width,f1Canvas.height); if(moveLeft) f1Car.x-=5; if(moveRight) f1Car.x+=5; if(f1Car.x<0) f1Car.x=0;if(f1Car.x+f1Car.width>f1Canvas.width)f1Car.x=f1Canvas.width-f1Car.width; f1Ctx.fillStyle="#0f0"; f1Ctx.fillRect(f1Car.x,f1Car.y,f1Car.width,f1Car.height); if(Math.random()<0.02) obstacles.push({x:Math.random()*(f1Canvas.width-40),y:-60,width:40,height:60}); for(let i=obstacles.length-1;i>=0;i--){let ob=obstacles[i]; ob.y+=5; f1Ctx.fillStyle="#ff0055"; f1Ctx.fillRect(ob.x,ob.y,ob.width,ob.height); if(f1Car.x<ob.x+ob.width&&f1Car.x+f1Car.width>ob.x&&f1Car.y<ob.y+ob.height&&f1Car.y+f1Car.height>ob.y){clearInterval(f1Interval); alert("💥 Crash! Distance: "+f1Score); return;} if(ob.y>f1Canvas.height) obstacles.splice(i,1);} f1Score++; f1ScoreDisplay.textContent=f1Score;}
+// F1
+let fctx = document.getElementById("f1Canvas").getContext("2d");
+let carX = 180;
 
-// --- Brick Breaker ---
-const brickCanvas=document.getElementById("brickCanvas"),brickCtx=brickCanvas.getContext("2d");
-const brickScoreDisplay=document.getElementById("brickScore"),startBrickBtn=document.getElementById("startBrick");
-const leftBrick=document.getElementById("leftBrick"),rightBrick=document.getElementById("rightBrick");
-let paddle={x:160,y:360,width:80,height:10},ball={x:200,y:350,dx:3,dy:-3,r:8},bricks=[],brickRows=3,brickCols=5,brickWidth=70,brickHeight=20,brickPadding=10,brickOffsetTop=30,brickOffsetLeft=20,brickScore=0;
-startBrickBtn.onclick=startBrick;
-document.addEventListener("keydown", e=>{if(e.key==="ArrowLeft") paddle.x-=20; if(e.key==="ArrowRight") paddle.x+=20;});
-leftBrick.onclick=()=>{paddle.x-=20; if(paddle.x<0)paddle.x=0;}
-rightBrick.onclick=()=>{paddle.x+=20; if(paddle.x+paddle.width>brickCanvas.width)paddle.x=brickCanvas.width-paddle.width;}
+function startF1(){
+  drawCar();
+}
+
+function drawCar(){
+  fctx.clearRect(0,0,400,500);
+  fctx.fillStyle="lime";
+  fctx.fillRect(carX,450,40,40);
+}
+
+function moveLeft(){
+  carX -= 10;
+  if(carX < 0) carX = 0;
+  drawCar();
+}
+
+function moveRight(){
+  carX += 10;
+  if(carX > 360) carX = 360;
+  drawCar();
+}
+
+// BRICK
+let bctx = document.getElementById("brickCanvas").getContext("2d");
+let ballX = 200, ballY = 200, dx = 3, dy = -3;
+let brickInterval;
+
 function startBrick(){
-    bricks=[]; for(let c=0;c<brickCols;c++){bricks[c]=[];for(let r=0;r<brickRows;r++){bricks[c][r]={x:0,y:0,status:1};}}
-    paddle.x=160; ball.x=200; ball.y=350; ball.dx=3; ball.dy=-3; brickScore=0; brickScoreDisplay.textContent=brickScore;
-    clearInterval(brickInterval); brickInterval=setInterval(updateBrick,20);
+  clearInterval(brickInterval);
+  ballX = 200;
+  ballY = 200;
+  dx = 3;
+  dy = -3;
+  brickInterval = setInterval(updateBrick,20);
 }
+
 function updateBrick(){
-    brickCtx.fillStyle="#111"; brickCtx.fillRect(0,0,brickCanvas.width,brickCanvas.height);
-    // draw bricks
-    for(let c=0;c<brickCols;c++){for(let r=0;r<brickRows;r++){if(bricks[c][r].status){let brickX=c*(brickWidth+brickPadding)+brickOffsetLeft; let brickY=r*(brickHeight+brickPadding)+brickOffsetTop; bricks[c][r].x=brickX; bricks[c][r].y=brickY; brickCtx.fillStyle="#ff0055"; brickCtx.fillRect(brickX,brickY,brickWidth,brickHeight);}}}
-    // paddle
-    brickCtx.fillStyle="#0f0"; brickCtx.fillRect(paddle.x,paddle.y,paddle.width,paddle.height);
-    // ball
-    brickCtx.beginPath(); brickCtx.arc(ball.x,ball.y,ball.r,0,Math.PI*2); brickCtx.fillStyle="#ff0"; brickCtx.fill(); brickCtx.closePath();
-    ball.x+=ball.dx; ball.y+=ball.dy;
-    // wall collision
-    if(ball.x+ball.dx>brickCanvas.width-ball.r||
+  bctx.clearRect(0,0,400,400);
+
+  bctx.beginPath();
+  bctx.arc(ballX,ballY,8,0,Math.PI*2);
+  bctx.fillStyle="#ff0055";
+  bctx.fill();
+  bctx.closePath();
+
+  ballX += dx;
+  ballY += dy;
+
+  if(ballX > 392 || ballX < 8) dx *= -1;
+  if(ballY < 8) dy *= -1;
+
+  if(ballY > 400){
+    clearInterval(brickInterval);
+    alert("💀 Game Over");
+  }
+}
+
+</script>
+
+</body>
+</html>
