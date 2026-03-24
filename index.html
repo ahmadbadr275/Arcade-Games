@@ -108,12 +108,13 @@ canvas {
 
 <!-- F1 -->
 <div id="f1" class="game">
-  <h2>F1</h2>
+  <h2>F1 Racing</h2>
   <canvas id="f1Canvas" width="400" height="500"></canvas>
   <button onclick="startF1()">Start</button>
   <div id="f1Controls">
     <button onclick="moveLeft()">⬅️ Left</button>
     <button onclick="moveRight()">➡️ Right</button>
+    <button onclick="activateBoost()">⚡ Boost</button>
   </div>
   <button onclick="back()">Back</button>
 </div>
@@ -224,41 +225,104 @@ function drawSnake(){
   sctx.fillRect(food.x*20,food.y*20,20,20);
 }
 
-// F1
+// F1 Racing
 let fctx = document.getElementById("f1Canvas").getContext("2d");
-let car={x:180,y:450}, obs=[], f1Int;
+let f1Car = { x:180, y:400, width:40, height:50 };
+let obstacles = [];
+let f1Int;
+let roadOffset = 0;
+let boost = false;
+let distance = 0;
 
 function startF1(){
-  car.x=180; obs=[];
+  f1Car.x = 180;
+  obstacles = [];
+  roadOffset = 0;
+  distance = 0;
+  boost = false;
   clearInterval(f1Int);
-  f1Int=setInterval(updateF1,30);
+  f1Int = setInterval(updateF1, 30);
 }
 
-function moveLeft(){ car.x-=20; }
-function moveRight(){ car.x+=20; }
+function moveLeft(){ f1Car.x -= 20; if(f1Car.x<0) f1Car.x=0; }
+function moveRight(){ f1Car.x += 20; if(f1Car.x>360) f1Car.x=360; }
+function activateBoost(){ boost=true; setTimeout(()=>boost=false,2000); beep(800); }
+
+function drawF1Car(x, y){
+  // Car body
+  fctx.fillStyle = "red"; 
+  fctx.fillRect(x+10, y+10, 20, 40);
+
+  // Front wing
+  fctx.fillStyle = "#555";
+  fctx.fillRect(x, y+5, 40, 10);
+
+  // Rear wing
+  fctx.fillStyle = "#555";
+  fctx.fillRect(x+5, y+45, 30, 5);
+
+  // Wheels
+  fctx.fillStyle = "black";
+  fctx.beginPath();
+  fctx.arc(x+5, y+15, 5, 0, Math.PI*2);
+  fctx.arc(x+35, y+15, 5, 0, Math.PI*2);
+  fctx.arc(x+5, y+40, 5, 0, Math.PI*2);
+  fctx.arc(x+35, y+40, 5, 0, Math.PI*2);
+  fctx.fill();
+}
+
+function drawObstacle(x, y){
+  fctx.fillStyle = "#ff0055";
+  fctx.fillRect(x, y, 40, 50);
+  fctx.fillStyle = "black";
+  fctx.beginPath();
+  fctx.arc(x+5, y+10, 5, 0, Math.PI*2);
+  fctx.arc(x+35, y+10, 5, 0, Math.PI*2);
+  fctx.arc(x+5, y+40, 5, 0, Math.PI*2);
+  fctx.arc(x+35, y+40, 5, 0, Math.PI*2);
+  fctx.fill();
+}
 
 function updateF1(){
-  fctx.fillStyle="#000";
+  fctx.fillStyle="#333"; // track
   fctx.fillRect(0,0,400,500);
 
-  fctx.fillStyle="lime";
-  fctx.fillRect(car.x,car.y,40,50);
-
-  if(Math.random()<0.03){
-    obs.push({x:Math.random()*360,y:0});
+  // Road lines
+  fctx.strokeStyle = "white";
+  fctx.lineWidth = 4;
+  for(let i=-20; i<25; i++){
+    fctx.beginPath();
+    fctx.moveTo(198, i*50 + roadOffset%50);
+    fctx.lineTo(198, i*50 + 20 + roadOffset%50);
+    fctx.stroke();
   }
 
-  obs.forEach(o=>{
-    o.y+=5;
-    fctx.fillStyle="#ff0055";
-    fctx.fillRect(o.x,o.y,40,50);
+  roadOffset += boost?15:5;
+  distance += boost?2:1;
 
-    if(car.x<o.x+40 && car.x+40>o.x && car.y<o.y+50 && car.y+50>o.y){
+  // Draw player car
+  drawF1Car(f1Car.x, f1Car.y);
+
+  // Spawn obstacles
+  if(Math.random()<0.02){
+    let ox = Math.floor(Math.random()*9)*40;
+    obstacles.push({x:ox, y:-50});
+  }
+
+  // Update obstacles
+  for(let i=obstacles.length-1;i>=0;i--){
+    let o = obstacles[i];
+    o.y += boost?15:5;
+    drawObstacle(o.x, o.y);
+
+    if(f1Car.x < o.x+40 && f1Car.x+40 > o.x && f1Car.y < o.y+50 && f1Car.y+50 > o.y){
       clearInterval(f1Int);
       beep(100);
-      alert("Crash!");
+      alert("Crash! Distance: "+distance);
     }
-  });
+
+    if(o.y>500) obstacles.splice(i,1);
+  }
 }
 
 // BRICK
