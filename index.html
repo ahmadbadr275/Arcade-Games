@@ -41,22 +41,21 @@ canvas {
   display:block;
 }
 
-/* Arcade-style on-screen controls */
-#snakeControls button,
-#f1Controls button,
-#brickControls button {
+/* On-screen arcade controls */
+#snakeControls, #f1Controls, #brickControls {
+  display:inline-grid; gap:5px; justify-content:center;
+}
+
+#snakeControls button, #f1Controls button, #brickControls button {
   background:#111;
   border:2px solid #ff0055;
   color:#fff;
   padding:15px 25px;
-  margin:5px;
   font-size:18px;
   cursor:pointer;
 }
 
-#snakeControls button:hover,
-#f1Controls button:hover,
-#brickControls button:hover {
+#snakeControls button:hover, #f1Controls button:hover, #brickControls button:hover {
   background:#ff0055;
   color:#000;
 }
@@ -97,11 +96,10 @@ canvas {
   <h2>Snake</h2>
   <canvas id="snakeCanvas" width="400" height="400"></canvas>
   <button onclick="startSnake()">Start</button>
-  <div id="snakeControls">
-    <button onclick="setDir('UP')">⬆️ Up</button>
-    <button onclick="setDir('LEFT')">⬅️ Left</button>
-    <button onclick="setDir('DOWN')">⬇️ Down</button>
-    <button onclick="setDir('RIGHT')">➡️ Right</button>
+  <div id="snakeControls" style="grid-template-columns:50px 50px 50px; grid-template-rows:50px 50px 50px;">
+    <div></div><button onclick="setDir('UP')">↑</button><div></div>
+    <button onclick="setDir('LEFT')">←</button><div></div><button onclick="setDir('RIGHT')">→</button>
+    <div></div><button onclick="setDir('DOWN')">↓</button><div></div>
   </div>
   <button onclick="back()">Back</button>
 </div>
@@ -112,8 +110,8 @@ canvas {
   <canvas id="f1Canvas" width="400" height="500"></canvas>
   <button onclick="startF1()">Start</button>
   <div id="f1Controls">
-    <button onclick="moveLeft()">⬅️ Left</button>
-    <button onclick="moveRight()">➡️ Right</button>
+    <button onclick="moveLeft()">⬅️</button>
+    <button onclick="moveRight()">➡️</button>
     <button onclick="activateBoost()">⚡ Boost</button>
   </div>
   <button onclick="back()">Back</button>
@@ -125,8 +123,8 @@ canvas {
   <canvas id="brickCanvas" width="400" height="400"></canvas>
   <button onclick="startBrick()">Start</button>
   <div id="brickControls">
-    <button onclick="movePaddle(-20)">⬅️ Left</button>
-    <button onclick="movePaddle(20)">➡️ Right</button>
+    <button onclick="movePaddle(-20)">⬅️</button>
+    <button onclick="movePaddle(20)">➡️</button>
   </div>
   <button onclick="back()">Back</button>
 </div>
@@ -147,9 +145,7 @@ function openGame(id){
   document.querySelectorAll('.menu,.game').forEach(e=>e.classList.remove('active'));
   document.getElementById(id).classList.add('active');
 }
-function back(){
-  openGame('menu');
-}
+function back(){ openGame('menu'); }
 
 // GUESS
 let number = Math.floor(Math.random()*100)+1;
@@ -159,7 +155,7 @@ function guess(){
   if(g == number){
     msg.textContent="🎉 Correct!";
     beep(600);
-    number = Math.floor(Math.random()*100)+1; // reset for new game
+    number = Math.floor(Math.random()*100)+1; // reset
   }
   else if(g < number){ msg.textContent="Too low"; beep(200); }
   else { msg.textContent="Too high"; beep(200); }
@@ -167,16 +163,12 @@ function guess(){
 
 // CLICKER
 let score=0;
-function clickScore(){
-  score++;
-  document.getElementById("score").textContent=score;
-  beep(500);
-}
+function clickScore(){ score++; document.getElementById("score").textContent=score; beep(500); }
 
 // SNAKE
 let sctx = document.getElementById("snakeCanvas").getContext("2d");
 let snake, food, snakeInt;
-let dir = "RIGHT"; // global direction
+let dir = "RIGHT";
 
 function startSnake(){
   snake=[{x:10,y:10}];
@@ -187,50 +179,40 @@ function startSnake(){
 }
 
 function setDir(d){
-  dir = d;
+  // prevent reversing
+  if(d==="UP" && dir!=="DOWN") dir="UP";
+  if(d==="DOWN" && dir!=="UP") dir="DOWN";
+  if(d==="LEFT" && dir!=="RIGHT") dir="LEFT";
+  if(d==="RIGHT" && dir!=="LEFT") dir="RIGHT";
 }
 
 document.addEventListener("keydown",e=>{
-  if(e.key==="ArrowUp"&&dir!=="DOWN")dir="UP";
-  if(e.key==="ArrowDown"&&dir!=="UP")dir="DOWN";
-  if(e.key==="ArrowLeft"&&dir!=="RIGHT")dir="LEFT";
-  if(e.key==="ArrowRight"&&dir!=="LEFT")dir="RIGHT";
+  if(e.key==="ArrowUp") setDir('UP');
+  if(e.key==="ArrowDown") setDir('DOWN');
+  if(e.key==="ArrowLeft") setDir('LEFT');
+  if(e.key==="ArrowRight") setDir('RIGHT');
 });
 
 function updateSnake(){
   let head={...snake[0]};
-  if(dir==="UP")head.y--;
-  if(dir==="DOWN")head.y++;
-  if(dir==="LEFT")head.x--;
-  if(dir==="RIGHT")head.x++;
-
-  if(head.x<0||head.y<0||head.x>=20||head.y>=20||
-     snake.some(s=>s.x===head.x&&s.y===head.y)){
-    clearInterval(snakeInt);
-    beep(100);
-    alert("Game Over");
-    return;
+  if(dir==="UP") head.y--;
+  if(dir==="DOWN") head.y++;
+  if(dir==="LEFT") head.x--;
+  if(dir==="RIGHT") head.x++;
+  if(head.x<0||head.y<0||head.x>=20||head.y>=20||snake.some(s=>s.x===head.x&&s.y===head.y)){
+    clearInterval(snakeInt); beep(100); alert("Game Over"); return;
   }
-
   snake.unshift(head);
-
   if(head.x===food.x&&head.y===food.y){
     food={x:Math.floor(Math.random()*20),y:Math.floor(Math.random()*20)};
     beep(700);
   } else snake.pop();
-
   drawSnake();
 }
-
 function drawSnake(){
-  sctx.fillStyle="#000";
-  sctx.fillRect(0,0,400,400);
-
-  sctx.fillStyle="lime";
-  snake.forEach(s=>sctx.fillRect(s.x*20,s.y*20,20,20));
-
-  sctx.fillStyle="#ff0055";
-  sctx.fillRect(food.x*20,food.y*20,20,20);
+  sctx.fillStyle="#000"; sctx.fillRect(0,0,400,400);
+  sctx.fillStyle="lime"; snake.forEach(s=>sctx.fillRect(s.x*20,s.y*20,20,20));
+  sctx.fillStyle="#ff0055"; sctx.fillRect(food.x*20,food.y*20,20,20);
 }
 
 // F1 Racing
@@ -243,99 +225,74 @@ let boost = false;
 let distance = 0;
 
 function startF1(){
-  f1Car.x = 180;
-  obstacles = [];
-  roadOffset = 0;
-  distance = 0;
-  boost = false;
+  f1Car.x = 180; obstacles=[]; roadOffset=0; distance=0; boost=false;
   clearInterval(f1Int);
-  f1Int = setInterval(updateF1, 30);
+  f1Int=setInterval(updateF1,30);
 }
-
 function moveLeft(){ f1Car.x -= 20; if(f1Car.x<0) f1Car.x=0; }
 function moveRight(){ f1Car.x += 20; if(f1Car.x>360) f1Car.x=360; }
 function activateBoost(){ boost=true; setTimeout(()=>boost=false,2000); beep(800); }
 
-function drawF1Car(x, y){
-  fctx.fillStyle = "red"; 
-  fctx.fillRect(x+10, y+10, 20, 40);
-  fctx.fillStyle = "#555"; fctx.fillRect(x, y+5, 40, 10);
-  fctx.fillStyle = "#555"; fctx.fillRect(x+5, y+45, 30, 5);
-  fctx.fillStyle = "black";
+function drawF1Car(x,y){
+  // F1 car design
+  fctx.fillStyle="red"; fctx.fillRect(x+10,y+10,20,40); // body
+  fctx.fillStyle="#ffcc00"; fctx.fillRect(x+5,y+5,30,10); // cockpit top
+  fctx.fillStyle="#555"; fctx.fillRect(x,y+45,40,5); // rear wing
+  fctx.fillStyle="black"; // wheels
   fctx.beginPath();
-  fctx.arc(x+5, y+15, 5, 0, Math.PI*2);
-  fctx.arc(x+35, y+15, 5, 0, Math.PI*2);
-  fctx.arc(x+5, y+40, 5, 0, Math.PI*2);
-  fctx.arc(x+35, y+40, 5, 0, Math.PI*2);
+  fctx.arc(x+5,y+15,5,0,Math.PI*2);
+  fctx.arc(x+35,y+15,5,0,Math.PI*2);
+  fctx.arc(x+5,y+40,5,0,Math.PI*2);
+  fctx.arc(x+35,y+40,5,0,Math.PI*2);
   fctx.fill();
 }
 
-function drawObstacle(x, y){
-  fctx.fillStyle = "#ff0055";
-  fctx.fillRect(x, y, 40, 50);
-  fctx.fillStyle = "black";
+function drawObstacle(x,y){
+  fctx.fillStyle="#ff0055"; fctx.fillRect(x,y,40,50);
+  fctx.fillStyle="black";
   fctx.beginPath();
-  fctx.arc(x+5, y+10, 5, 0, Math.PI*2);
-  fctx.arc(x+35, y+10, 5, 0, Math.PI*2);
-  fctx.arc(x+5, y+40, 5, 0, Math.PI*2);
-  fctx.arc(x+35, y+40, 5, 0, Math.PI*2);
+  fctx.arc(x+5,y+10,5,0,Math.PI*2);
+  fctx.arc(x+35,y+10,5,0,Math.PI*2);
+  fctx.arc(x+5,y+40,5,0,Math.PI*2);
+  fctx.arc(x+35,y+40,5,0,Math.PI*2);
   fctx.fill();
 }
 
 function updateF1(){
   fctx.fillStyle="#333"; fctx.fillRect(0,0,400,500);
-  fctx.strokeStyle = "white"; fctx.lineWidth = 4;
-  for(let i=-20; i<25; i++){
+  fctx.strokeStyle="white"; fctx.lineWidth=4;
+  for(let i=-20;i<25;i++){
     fctx.beginPath();
-    fctx.moveTo(198, i*50 + roadOffset%50);
-    fctx.lineTo(198, i*50 + 20 + roadOffset%50);
+    fctx.moveTo(198,i*50 + roadOffset%50);
+    fctx.lineTo(198,i*50 + 20 + roadOffset%50);
     fctx.stroke();
   }
-  roadOffset += boost?15:5;
-  distance += boost?2:1;
-  drawF1Car(f1Car.x, f1Car.y);
-
-  if(Math.random()<0.02){
-    let ox = Math.floor(Math.random()*9)*40;
-    obstacles.push({x:ox, y:-50});
-  }
-
+  roadOffset += boost?15:5; distance += boost?2:1;
+  drawF1Car(f1Car.x,f1Car.y);
+  if(Math.random()<0.02){ let ox=Math.floor(Math.random()*9)*40; obstacles.push({x:ox,y:-50}); }
   for(let i=obstacles.length-1;i>=0;i--){
-    let o = obstacles[i];
-    o.y += boost?15:5;
-    drawObstacle(o.x, o.y);
-
-    if(f1Car.x < o.x+40 && f1Car.x+40 > o.x && f1Car.y < o.y+50 && f1Car.y+50 > o.y){
-      clearInterval(f1Int);
-      beep(100);
-      alert("Crash! Distance: "+distance);
+    let o=obstacles[i]; o.y+=boost?15:5; drawObstacle(o.x,o.y);
+    if(f1Car.x<o.x+40 && f1Car.x+40>o.x && f1Car.y<o.y+50 && f1Car.y+50>o.y){
+      clearInterval(f1Int); beep(100); alert("Crash! Distance:"+distance);
     }
-
     if(o.y>500) obstacles.splice(i,1);
   }
 }
 
 // BRICK
 let bctx = document.getElementById("brickCanvas").getContext("2d");
-let ball, paddle, bricks, bInt;
+let ball,paddle,bricks,bInt;
 
 function startBrick(){
-  paddle={x:150};
-  ball={x:200,y:200,dx:3,dy:-3};
-  bricks=[];
-  for(let i=0;i<5;i++){
-    for(let j=0;j<3;j++){
-      bricks.push({x:i*80+20,y:j*30+30,hit:false});
-    }
-  }
-  clearInterval(bInt);
-  bInt=setInterval(updateBrick,20);
+  paddle={x:150}; ball={x:200,y:200,dx:3,dy:-3}; bricks=[];
+  for(let i=0;i<5;i++){ for(let j=0;j<3;j++){ bricks.push({x:i*80+20,y:j*30+30,hit:false}); } }
+  clearInterval(bInt); bInt=setInterval(updateBrick,20);
 }
 
 function movePaddle(dx){
-  paddle.x += dx;
-  if(paddle.x < 0) paddle.x = 0;
-  if(paddle.x > 320) paddle.x = 320;
+  paddle.x+=dx;
+  if(paddle.x<0) paddle.x=0;
+  if(paddle.x>320) paddle.x=320;
 }
 
 document.addEventListener("keydown",e=>{
@@ -352,14 +309,8 @@ function updateBrick(){
   if(ball.y<0) ball.dy*=-1;
   if(ball.y>370 && ball.x>paddle.x && ball.x<paddle.x+80){ ball.dy*=-1; beep(400); }
   if(ball.y>400){ clearInterval(bInt); beep(100); alert("Game Over"); }
-  bricks.forEach(b=>{
-    if(!b.hit){
-      bctx.fillStyle="#ff0055"; bctx.fillRect(b.x,b.y,60,20);
-      if(ball.x>b.x && ball.x<b.x+60 && ball.y>b.y && ball.y<b.y+20){
-        b.hit=true; ball.dy*=-1; beep(700);
-      }
-    }
-  });
+  bricks.forEach(b=>{ if(!b.hit){ bctx.fillStyle="#ff0055"; bctx.fillRect(b.x,b.y,60,20);
+    if(ball.x>b.x && ball.x<b.x+60 && ball.y>b.y && ball.y<b.y+20){ b.hit=true; ball.dy*=-1; beep(700); } } });
 }
 </script>
 </body>
