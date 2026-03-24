@@ -21,7 +21,6 @@ button:hover { background:#ff0055; color:#000; }
 .active { display:block; }
 canvas { border:2px solid #ff0055; margin:20px auto; display:block; }
 
-/* Snake on-screen controls */
 #snakeControls {
   display:inline-grid;
   grid-template-columns:50px 50px 50px;
@@ -38,7 +37,6 @@ canvas { border:2px solid #ff0055; margin:20px auto; display:block; }
 
 <h1>🎮 ULTIMATE ARCADE HUB</h1>
 
-<!-- MENU -->
 <div id="menu" class="menu active">
   <button onclick="openGame('guess')">🎯 Guess</button>
   <button onclick="openGame('clicker')">🖱️ Clicker</button>
@@ -47,7 +45,6 @@ canvas { border:2px solid #ff0055; margin:20px auto; display:block; }
   <button onclick="openGame('brick')">🧱 Brick</button>
 </div>
 
-<!-- GUESS -->
 <div id="guess" class="game">
   <h2>Guess</h2>
   <input id="guessInput" type="number">
@@ -56,7 +53,6 @@ canvas { border:2px solid #ff0055; margin:20px auto; display:block; }
   <button onclick="back()">Back</button>
 </div>
 
-<!-- CLICKER -->
 <div id="clicker" class="game">
   <h2>Clicker</h2>
   <button onclick="clickScore()">CLICK</button>
@@ -64,7 +60,6 @@ canvas { border:2px solid #ff0055; margin:20px auto; display:block; }
   <button onclick="back()">Back</button>
 </div>
 
-<!-- SNAKE -->
 <div id="snake" class="game">
   <h2>Snake</h2>
   <canvas id="snakeCanvas" width="400" height="400"></canvas>
@@ -77,7 +72,6 @@ canvas { border:2px solid #ff0055; margin:20px auto; display:block; }
   <button onclick="back()">Back</button>
 </div>
 
-<!-- F1 -->
 <div id="f1" class="game">
   <h2>F1 Racing</h2>
   <canvas id="f1Canvas" width="400" height="500"></canvas>
@@ -90,7 +84,6 @@ canvas { border:2px solid #ff0055; margin:20px auto; display:block; }
   <button onclick="back()">Back</button>
 </div>
 
-<!-- BRICK -->
 <div id="brick" class="game">
   <h2>Brick</h2>
   <canvas id="brickCanvas" width="400" height="400"></canvas>
@@ -103,7 +96,6 @@ canvas { border:2px solid #ff0055; margin:20px auto; display:block; }
 </div>
 
 <script>
-// SOUND
 function beep(freq=300){
   let ctx = new (window.AudioContext||window.webkitAudioContext)();
   let osc = ctx.createOscillator();
@@ -113,11 +105,9 @@ function beep(freq=300){
   setTimeout(()=>osc.stop(),100);
 }
 
-// MENU
 function openGame(id){ document.querySelectorAll('.menu,.game').forEach(e=>e.classList.remove('active')); document.getElementById(id).classList.add('active'); }
 function back(){ openGame('menu'); }
 
-// GUESS
 let number = Math.floor(Math.random()*100)+1;
 function guess(){
   let g = document.getElementById("guessInput").value;
@@ -127,15 +117,13 @@ function guess(){
   else { msg.textContent="Too high"; beep(200); }
 }
 
-// CLICKER
 let score=0;
 function clickScore(){ score++; document.getElementById("score").textContent=score; beep(500); }
 
-// SNAKE
 let sctx = document.getElementById("snakeCanvas").getContext("2d");
 let snake, food, snakeInt;
 let dir="RIGHT";
-function startSnake(){ snake=[{x:10,y:10}]; dir="RIGHT"; food={x:5,y:5}; clearInterval(snakeInt); snakeInt=setInterval(updateSnake,100); }
+function startSnake(){ snake=[{x:10,y:10}]; dir="RIGHT"; food={x:5,y:5}; clearInterval(snakeInt); snakeInt=setInterval(updateSnake,200); } // <-- Slower speed (200ms)
 function setDir(d){ if(d==="UP" && dir!=="DOWN") dir="UP"; if(d==="DOWN" && dir!=="UP") dir="DOWN"; if(d==="LEFT" && dir!=="RIGHT") dir="LEFT"; if(d==="RIGHT" && dir!=="LEFT") dir="RIGHT"; }
 document.addEventListener("keydown",e=>{ if(e.key==="ArrowUp") setDir('UP'); if(e.key==="ArrowDown") setDir('DOWN'); if(e.key==="ArrowLeft") setDir('LEFT'); if(e.key==="ArrowRight") setDir('RIGHT'); });
 function updateSnake(){
@@ -152,39 +140,40 @@ function updateSnake(){
 }
 function drawSnake(){ sctx.fillStyle="#000"; sctx.fillRect(0,0,400,400); sctx.fillStyle="lime"; snake.forEach(s=>sctx.fillRect(s.x*20,s.y*20,20,20)); sctx.fillStyle="#ff0055"; sctx.fillRect(food.x*20,food.y*20,20,20); }
 
-// F1
+// F1 Racing
 let fctx = document.getElementById("f1Canvas").getContext("2d");
-let f1Car = {x:180,y:400,width:40,height:50};
+let f1Car = {x:180,y:400};
 let obstacles = [], f1Int, roadOffset=0, boost=false, distance=0;
+
 function startF1(){ f1Car.x=180; obstacles=[]; roadOffset=0; distance=0; boost=false; clearInterval(f1Int); f1Int=setInterval(updateF1,30); }
 function moveLeft(){ f1Car.x-=20; if(f1Car.x<0) f1Car.x=0; }
 function moveRight(){ f1Car.x+=20; if(f1Car.x>360) f1Car.x=360; }
 function activateBoost(){ boost=true; setTimeout(()=>boost=false,2000); beep(800); }
 
 function drawF1Car(x,y){
-  // Realistic F1 car
-  fctx.fillStyle="red"; fctx.fillRect(x+10,y+10,20,40); // body
-  fctx.fillStyle="yellow"; fctx.fillRect(x+10,y+5,20,10); // cockpit front
-  fctx.fillStyle="#555"; fctx.fillRect(x,y+45,40,5); // rear wing
-  // front wing
-  fctx.fillStyle="#ff0000";
-  fctx.beginPath(); fctx.moveTo(x+5,y+50); fctx.lineTo(x+35,y+50); fctx.lineTo(x+20,y+55); fctx.closePath();
-  fctx.fill();
+  fctx.save(); fctx.translate(x,y);
+  // main body
+  fctx.fillStyle="red"; fctx.fillRect(10,15,20,40);
+  // cockpit
+  fctx.fillStyle="yellow"; fctx.fillRect(12,10,16,10);
+  // nose cone
+  fctx.fillStyle="red"; fctx.beginPath(); fctx.moveTo(20,5); fctx.lineTo(12,15); fctx.lineTo(28,15); fctx.closePath(); fctx.fill();
+  // rear wing
+  fctx.fillStyle="#555"; fctx.fillRect(8,55,24,5);
+  // side pods
+  fctx.fillStyle="#ff2222"; fctx.fillRect(5,25,5,20); fctx.fillRect(30,25,5,20);
   // wheels
   fctx.fillStyle="black";
-  fctx.beginPath();
-  fctx.arc(x+5,y+15,5,0,Math.PI*2);
-  fctx.arc(x+35,y+15,5,0,Math.PI*2);
-  fctx.arc(x+5,y+40,5,0,Math.PI*2);
-  fctx.arc(x+35,y+40,5,0,Math.PI*2);
+  fctx.beginPath(); fctx.arc(5,25,5,0,Math.PI*2); fctx.arc(35,25,5,0,Math.PI*2);
+  fctx.arc(5,45,5,0,Math.PI*2); fctx.arc(35,45,5,0,Math.PI*2);
   fctx.fill();
+  fctx.restore();
 }
 
 function drawObstacle(x,y){
   fctx.fillStyle="#ff0055"; fctx.fillRect(x,y,40,50);
   fctx.fillStyle="black";
-  fctx.beginPath();
-  fctx.arc(x+5,y+10,5,0,Math.PI*2);
+  fctx.beginPath(); fctx.arc(x+5,y+10,5,0,Math.PI*2);
   fctx.arc(x+35,y+10,5,0,Math.PI*2);
   fctx.arc(x+5,y+40,5,0,Math.PI*2);
   fctx.arc(x+35,y+40,5,0,Math.PI*2);
